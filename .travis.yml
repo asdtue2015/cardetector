@@ -5,7 +5,7 @@ compiler:
 
 before_install:
   - sudo apt-get -qq update
-  - sudo apt-get install -y opencv
+  - sudo apt-get install -y libopencv-dev
 
 before_script:
   - cd src
