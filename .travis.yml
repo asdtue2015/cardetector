@@ -29,6 +29,8 @@ before_script:
   - cd /home/travis/build/asdtue2015/cardetector
   - pwd
   - cd src
+  - pwd
   - cd extractor
+  - pwd
 
 script: make
