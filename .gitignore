@@ -1,2 +1,6 @@
 detector
+!detector/
 testBinaryIO
+!testBinaryIO/
+extractor
+!extractor/
