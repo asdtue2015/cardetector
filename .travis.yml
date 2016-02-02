@@ -4,12 +4,19 @@ compiler:
   - gcc
 
 before_install:
+  - pwd
   - sudo apt-get -qq update
-  - apt-cache showpkg libopencv-dev
-  - sudo apt-get install -y libopencv-dev
-  - sudo apt-get install -y libopencv-gpu-dev
-  - apt-cache search opencv
-  - sudo apt-get install -y libopencv-gpu2.3
+  - sudo apt-get install build-essential
+  - sudo apt-get install cmake git libgtk2.0-dev pkg-config libavcodec-dev libavformat-dev libswscale-dev
+  - sudo apt-get install python-dev python-numpy libtbb2 libtbb-dev libjpeg-dev libpng-dev libtiff-dev libjasper-dev libdc1394-22-dev
+  - mkdir opencv
+  - cd opencv
+  - wget http://sourceforge.net/projects/opencvlibrary/files/opencv-unix/2.4.11/opencv-2.4.11.zip/download
+  - unzip opencv-2.4.11.zip
+  - ls
+  - cd opencv*
+  - cd ..
+  - pwd
 
 before_script:
   - cd src
