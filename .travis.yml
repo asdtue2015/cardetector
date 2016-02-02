@@ -1,0 +1,10 @@
+language: cpp
+
+compiler:
+  - gcc
+
+before_script:
+  - cd src
+  - cd extractor
+
+script: make
