@@ -8,7 +8,7 @@ before_install:
   - sudo apt-get install -y libopencv-dev
   - sudo apt-get install -y libopencv-gpu-dev
   - apt-cache search opencv
-  - sudo apt-get install -y libopencv-gpu
+  - sudo apt-get install -y libopencv-gpu2.3
 
 before_script:
   - cd src
