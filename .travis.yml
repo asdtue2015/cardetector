@@ -3,6 +3,10 @@ language: cpp
 compiler:
   - gcc
 
+before_install:
+  - sudo apt-get -qq update
+  - sudo apt-get install -y opencv
+
 before_script:
   - cd src
   - cd extractor
