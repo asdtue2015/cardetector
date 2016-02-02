@@ -5,6 +5,7 @@ compiler:
 
 before_install:
   - sudo apt-get -qq update
+  - apt-cache showpkg libopencv-dev
   - sudo apt-get install -y libopencv-dev
   - sudo apt-get install -y libopencv-gpu-dev
   - apt-cache search opencv
