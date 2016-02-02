@@ -25,7 +25,9 @@ before_install:
   - sudo make install
 
 before_script:
-  - cd
+  - pwd
+  - cd /home/travis/build/asdtue2015/cardetector
+  - pwd
   - cd src
   - cd extractor
 
