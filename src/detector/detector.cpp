@@ -241,30 +241,26 @@ void App::run()
 
     // Shah modification replaces below to load detecor in yml file
     // replace commented code below
-    FileStorage fs("../../data/SVMModel.yml", FileStorage::READ);
+    FileStorage fs("../../data/carDetector56x48.yml", FileStorage::READ);
+    int width, height;
     vector<float> detector;
-    int frameCount;
+    fs["width"] >> width; 
+    fs["height"] >> height; 
     fs["detector"] >> detector; 
-//     for (unsigned int i=0; i<detector.size(); i++)
-//     {
-//      std::cout << std::fixed << std::setprecision(10) << detector[i] << std::endl;
-//     }
     fs.release();
 
-    running = true;
-    cv::VideoWriter video_writer;
-
-    Size win_size(56,48); //(64, 128) or (48, 96)
+    // automatically set size from yaml file
+    Size win_size(width,height); //(64, 128) or (48, 96) or 56,48
     Size win_stride(args.win_stride_width, args.win_stride_height);
 
     // original code
-//     running = true;
-//     cv::VideoWriter video_writer;
-//         
+    running = true;
+    cv::VideoWriter video_writer;
+        
 //     Size win_size(args.win_width, args.win_width * 2); //(64, 128) or (48, 96)
 //     Size win_stride(args.win_stride_width, args.win_stride_height);
-// 
-//     // Create HOG descriptors and detectors here
+
+    // Create HOG descriptors and detectors here
 //     vector<float> detector;
 //     if (win_size == Size(64, 128))
 //         detector = cv::gpu::HOGDescriptor::getPeopleDetector64x128();
@@ -280,7 +276,7 @@ void App::run()
                               HOGDescriptor::L2Hys, 0.2, gamma_corr, cv::HOGDescriptor::DEFAULT_NLEVELS);
     
     // Shah modification replaces code below
-    gpu_hog.setSVMDetectorDirect(detector);
+    gpu_hog.setSVMDetector(detector);
     cpu_hog.setSVMDetector(detector); // this detector is not compatible with our detector files
 
     // original code
