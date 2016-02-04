@@ -19,6 +19,7 @@ before_install:
   - apt-cache search cuda
   - sudo apt-get -qq update
   - sudo apt-get install nvidia-opencl-dev libcudart4 nvidia-cuda-dev nvidia-cuda-toolkit
+  - sudo sh -c 'find / | grep cuda'
   - echo "installing opencv"
   - mkdir opencv
   - cd opencv
