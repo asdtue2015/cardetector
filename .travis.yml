@@ -9,8 +9,8 @@ before_install:
   - cd $HOME
   - pwd
   - cat /etc/apt/sources.list
-  - echo "deb http://us-central1.gce.archive.ubuntu.com/ubuntu/ precise restricted" >> /etc/apt/sources.list
-  - echo "deb-src http://us-central1.gce.archive.ubuntu.com/ubuntu/ precise restricted" >> /etc/apt/sources.list
+  - sudo sh -c 'echo "deb http://us-central1.gce.archive.ubuntu.com/ubuntu/ precise restricted" >> /etc/apt/sources.list'
+  - sudo sh -c 'echo "deb-src http://us-central1.gce.archive.ubuntu.com/ubuntu/ precise restricted" >> /etc/apt/sources.list'
   - cat /etc/apt/sources.list
   - sudo apt-get -qq update
   - sudo apt-get install build-essential
