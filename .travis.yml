@@ -32,7 +32,7 @@ before_install:
   - ls
   - mkdir release
   - cd release
-  - cmake -D CMAKE_BUILD_TYPE=RELEASE -D CMAKE_INSTALL_PREFIX=/usr/local -D WITH_CUDA=ON -D CUDA_GENERATION=Kepler ..
+  - cmake -D CMAKE_BUILD_TYPE=RELEASE -D CMAKE_INSTALL_PREFIX=/usr/local -D WITH_CUDA=ON -D CUDA_TOOLKIT_ROOT_DIR=/usr/lib/ -D CUDA_GENERATION=Kepler ..
   - make
   - sudo make install
 
