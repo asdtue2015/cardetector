@@ -13,7 +13,7 @@ before_install:
   - sudo apt-get install cmake git libgtk2.0-dev pkg-config libavcodec-dev libavformat-dev libswscale-dev
   - sudo apt-get install python-dev python-numpy libtbb2 libtbb-dev libjpeg-dev libpng-dev libtiff-dev libjasper-dev libdc1394-22-dev
   - apt-cache search cuda
-  - sudo apt-get install libcudart4 nvidia-cuda-dev nvidia-cuda-toolkit
+  - sudo apt-get install nvidia-opencl-dev libcudart4 nvidia-cuda-dev nvidia-cuda-toolkit
 #  - echo "installing cuda"
 #  - sudo dpkg -i cuda-repo-ubuntu1404_7.5-18_amd64.deb
 #  - sudo apt-get -qq update
