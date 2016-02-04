@@ -4,11 +4,27 @@ compiler:
   - gcc
 
 before_install:
+  - uname -a
+  - pwd
+  - cd $HOME
   - pwd
   - sudo apt-get -qq update
   - sudo apt-get install build-essential
   - sudo apt-get install cmake git libgtk2.0-dev pkg-config libavcodec-dev libavformat-dev libswscale-dev
   - sudo apt-get install python-dev python-numpy libtbb2 libtbb-dev libjpeg-dev libpng-dev libtiff-dev libjasper-dev libdc1394-22-dev
+  - echo "installing cuda"
+  - sudo dpkg -i cuda-repo-ubuntu1404_7.5-18_amd64.deb
+  - sudo apt-get -qq update
+  - sudo apt-get install cuda 
+  - export CUDA_HOME=/usr/local/cuda-7.5 
+  - export LD_LIBRARY_PATH=${CUDA_HOME}/lib64 
+  - PATH=${CUDA_HOME}/bin:${PATH} 
+  - export PATH 
+  - cuda-install-samples-7.5.sh  ~ 
+  - cd ~/NVIDIA_CUDA-7.5_Samples 
+  - cd 1_Utilities/deviceQuery 
+  - make 
+  - echo "installing opencv"
   - mkdir opencv
   - cd opencv
   - wget http://sourceforge.net/projects/opencvlibrary/files/opencv-unix/2.4.11/opencv-2.4.11.zip
@@ -20,7 +36,7 @@ before_install:
   - ls
   - mkdir release
   - cd release
-  - cmake -D CMAKE_BUILD_TYPE=RELEASE -D CMAKE_INSTALL_PREFIX=/usr/local ..
+  - cmake -D CMAKE_BUILD_TYPE=RELEASE -D CMAKE_INSTALL_PREFIX=/usr/local -D WITH_CUDA=ON ..
   - make
   - sudo make install
 
