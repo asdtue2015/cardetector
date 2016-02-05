@@ -116,7 +116,7 @@ int main(int argc, char** argv)
     try
     {
         if (argc < 2)
-            printHelp();
+            printHelp(); // in case not enough inputs
         Args args = Args::read(argc, argv);
         if (help_showed)
             return -1;
@@ -163,7 +163,7 @@ Args Args::read(int argc, char** argv)
 {
     Args args;
     for (int i = 1; i < argc; i++)
-    {
+    {// desired input settings
         if (string(argv[i]) == "--make_gray") args.make_gray = (string(argv[++i]) == "true");
         else if (string(argv[i]) == "--resize_src") args.resize_src = (string(argv[++i]) == "true");
         else if (string(argv[i]) == "--width") args.width = atoi(argv[++i]);
@@ -208,12 +208,12 @@ App::App(const Args& s)
          << "\t4/r - increase/decrease hit threshold\n"
          << endl;
 
-    use_gpu = true;
+    use_gpu = true; // set as deafult to use gpu not cpu
     make_gray = args.make_gray;
     scale = args.scale;
     gr_threshold = args.gr_threshold;
     nlevels = args.nlevels;
-
+                            // copying the inputs to the variables
     if (args.hit_threshold_auto)
         args.hit_threshold = args.win_width == 48 ? 1.4 : 0;
     hit_threshold = args.hit_threshold;
@@ -224,7 +224,7 @@ App::App(const Args& s)
         args.win_width = 64;*/
 
     cout << "Scale: " << scale << endl;
-    if (args.resize_src)
+    if (args.resize_src) // incase image resize is requested as an input then print the other parameters
         cout << "Resized source: (" << args.width << ", " << args.height << ")\n";
     cout << "Group threshold: " << gr_threshold << endl;
     cout << "Levels number: " << nlevels << endl;
@@ -245,14 +245,16 @@ void App::run()
     vector<float> detector;
     int frameCount;
     fs["detector"] >> detector; 
+    /* loads the detector information from the .yml file (note the .yml file contains
+     also the .yml file contain the values for the width and the height and they are read into variables but into the conflicting copy)*/
 //     for (unsigned int i=0; i<detector.size(); i++)
 //     {
 //      std::cout << std::fixed << std::setprecision(10) << detector[i] << std::endl;
 //     }
     fs.release();
 
-    running = true;
-    cv::VideoWriter video_writer;
+    running = true; // the variable representing the process running is set by default into true
+    cv::VideoWriter video_writer; // create a video output 
 
     Size win_size(56,48); //(64, 128) or (48, 96)
     Size win_stride(args.win_stride_width, args.win_stride_height);
@@ -280,7 +282,7 @@ void App::run()
                               HOGDescriptor::L2Hys, 0.2, gamma_corr, cv::HOGDescriptor::DEFAULT_NLEVELS);
     
     // Shah modification replaces code below
-    gpu_hog.setSVMDetector(detector);
+    gpu_hog.setSVMDetector(detector);// set the detector with the detector values from the .yml file
     cpu_hog.setSVMDetector(detector); // this detector is not compatible with our detector files
 
     // original code
@@ -292,14 +294,14 @@ void App::run()
         VideoCapture vc;
         Mat frame;
 
-        if (args.src_is_video)
+        if (args.src_is_video)// if the input is a video
         {
             vc.open(args.src.c_str());
             if (!vc.isOpened())
                 throw runtime_error(string("can't open video file: " + args.src));
             vc >> frame;
         }
-        else if (args.src_is_camera)
+        else if (args.src_is_camera)// if the input is from a camera
         {
             vc.open(args.camera_id);
             if (!vc.isOpened())
@@ -310,7 +312,7 @@ void App::run()
             }
             vc >> frame;
         }
-        else
+        else // in case the input is just an image
         {
             frame = imread(args.src);
             if (frame.empty())
@@ -321,12 +323,12 @@ void App::run()
         gpu::GpuMat gpu_img;
 
         // Iterate over all frames
-        while (running && !frame.empty())
+        while (running && !frame.empty())// as long as running is set to be true and we still have frames to run then
         {
-            workBegin();
+            workBegin(); // start timer of the whole work
 
             // Change format of the image
-            if (make_gray) cvtColor(frame, img_aux, CV_BGR2GRAY);
+            if (make_gray) cvtColor(frame, img_aux, CV_BGR2GRAY); // if itś set to move into grey scale then do so
             else if (use_gpu) cvtColor(frame, img_aux, CV_BGR2BGRA);
             else frame.copyTo(img_aux);
 
@@ -341,25 +343,29 @@ void App::run()
             vector<Rect> found;
 
             // Perform HOG classification
-            hogWorkBegin();
+            hogWorkBegin();// start the timer of the hog classification
             if (use_gpu)
             {
                 gpu_img.upload(img);
                 gpu_hog.detectMultiScale(gpu_img, found, hit_threshold, win_stride,
                                          Size(0, 0), scale, gr_threshold);
+                // if use_gpu is true so itś required to use gpu then use the detect multi scale function in the gpu_hog
             }
             else cpu_hog.detectMultiScale(img, found, hit_threshold, win_stride,
                                           Size(0, 0), scale, gr_threshold);
-            hogWorkEnd();
+                // if use_gpu is false then itś required to use the cpu then we use the detectmultiscale function of the cpu_hog
+                /* based on the produced output alternation when the mode is toggled between cpu and gpu although the thresholds didn change so it could
+                    be infered from the alternation in the output that detectmulti scale works differently depending on whether its from cpu_hog or gpu_hog */
+            hogWorkEnd();// end the timer of the hog classification
 
-            // Draw positive classified windows
+            // Draw positive classified windows  here we draw the green rectangular boxes of the found objects
             for (size_t i = 0; i < found.size(); i++)
             {
-                Rect r = found[i];
+                Rect r = found[i]; // what should be saved as suggest in a .yml file by the detector.cpp file
                 rectangle(img_to_show, r.tl(), r.br(), CV_RGB(0, 255, 0), 3);
             }
 
-            if (use_gpu)
+            if (use_gpu) // here the text is added (fps) to the display both in case of cpu or gpu
                 putText(img_to_show, "Mode: GPU", Point(5, 25), FONT_HERSHEY_SIMPLEX, 1., Scalar(255, 100, 0), 2);
             else
                 putText(img_to_show, "Mode: CPU", Point(5, 25), FONT_HERSHEY_SIMPLEX, 1., Scalar(255, 100, 0), 2);
@@ -367,9 +373,9 @@ void App::run()
             putText(img_to_show, "FPS (total): " + workFps(), Point(5, 105), FONT_HERSHEY_SIMPLEX, 1., Scalar(255, 100, 0), 2);
             imshow("opencv_gpu_hog", img_to_show);
 	    
-            if (args.src_is_video || args.src_is_camera) vc >> frame;
+            if (args.src_is_video || args.src_is_camera) vc >> frame;// whether the source is video or from came put update the frame to the capured value
 
-            workEnd();
+            workEnd(); // end the timer of the whole work
 
             if (args.write_video)
             {
@@ -386,7 +392,7 @@ void App::run()
 
                 video_writer << img;
             }
-
+                // produce an output video from the results
             handleKey((char)waitKey(3));
         }
     }
@@ -404,52 +410,63 @@ void App::handleKey(char key)
     case 'M':
         use_gpu = !use_gpu;
         cout << "Switched to " << (use_gpu ? "CUDA" : "CPU") << " mode\n";
+        // toggle between modes cpu and gpu by pressing m
         break;
     case 'g':
     case 'G':
         make_gray = !make_gray;
         cout << "Convert image to gray: " << (make_gray ? "YES" : "NO") << endl;
+        // toggle between gray or not by pressing g
         break;
     case '1':
         scale *= 1.11;
         cout << "Scale: " << scale << endl;
+        // increase the scale by 11% when digit 1 is pressed
         break;
     case 'q':
     case 'Q':
         scale /= 1.11;
         cout << "Scale: " << scale << endl;
+        // decrease the scale by 11% when q is pressed
         break;
     case '2':
         nlevels++;
         cout << "Levels number: " << nlevels << endl;
+        // increment the max number of HOG window scales when digit 2 is pressed
         break;
     case 'w':
     case 'W':
         nlevels = max(nlevels - 1, 1);
         cout << "Levels number: " << nlevels << endl;
+        // decrement the max number of HOG window scales but also ensuring itś minimum value is 1 when w is pressed
         break;
     case '3':
         gr_threshold++;
         cout << "Group threshold: " << gr_threshold << endl;
+        // merging similar rects constant (group threshold) incrementation when digit 3 is pressed
         break;
     case 'e':
     case 'E':
         gr_threshold = max(0, gr_threshold - 1);
         cout << "Group threshold: " << gr_threshold << endl;
+        // merging similar rects constant (group thershold) decrementation but also making sure that itś minimum value is 0 when e is pressed
         break;
     case '4':
         hit_threshold+=0.05;
         cout << "Hit threshold: " << hit_threshold << endl;
+        // classifying plane distance threshold (0.0 usually)"hit threshold" increment  by 0.05 when digit 4 is pressed
         break;
     case 'r':
     case 'R':
         hit_threshold = hit_threshold - 0.05;
         cout << "Hit threshold: " << hit_threshold << endl;
+        // classifying plane distance threshold (0.0 usually)"hit threshold" decrement  by 0.05 when r is pressed
         break;
     case 'c':
     case 'C':
         gamma_corr = !gamma_corr;
         cout << "Gamma correction: " << gamma_corr << endl;
+        // toggle the gamma correction variable when c is pressed
         break;
     }
 }
@@ -465,7 +482,7 @@ inline void App::hogWorkEnd()
 }
 
 inline string App::hogWorkFps() const
-{
+{// only the hog classification working fps
     stringstream ss;
     ss << hog_work_fps;
     return ss.str();
@@ -482,7 +499,7 @@ inline void App::workEnd()
 }
 
 inline string App::workFps() const
-{
+{// the working fps of the run
     stringstream ss;
     ss << work_fps;
     return ss.str();
