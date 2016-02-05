@@ -280,7 +280,7 @@ void App::run()
                               HOGDescriptor::L2Hys, 0.2, gamma_corr, cv::HOGDescriptor::DEFAULT_NLEVELS);
     
     // Shah modification replaces code below
-    gpu_hog.setSVMDetectorDirect(detector);
+    gpu_hog.setSVMDetector(detector);
     cpu_hog.setSVMDetector(detector); // this detector is not compatible with our detector files
 
     // original code
