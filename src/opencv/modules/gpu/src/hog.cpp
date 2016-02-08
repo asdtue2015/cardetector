@@ -58,7 +58,7 @@ size_t cv::gpu::HOGDescriptor::getBlockHistogramSize() const { throw_nogpu(); re
 double cv::gpu::HOGDescriptor::getWinSigma() const { throw_nogpu(); return 0; }
 bool cv::gpu::HOGDescriptor::checkDetectorSize() const { throw_nogpu(); return false; }
 void cv::gpu::HOGDescriptor::setSVMDetector(const vector<float>&) { throw_nogpu(); }
-void cv::gpu::HOGDescriptor::setSVMDetectorDirect(const vector<float>&) { throw_nogpu(); }
+// void cv::gpu::HOGDescriptor::setSVMDetectorDirect(const vector<float>&) { throw_nogpu(); }
 void cv::gpu::HOGDescriptor::detect(const GpuMat&, vector<Point>&, double, Size, Size) { throw_nogpu(); }
 void cv::gpu::HOGDescriptor::detectMultiScale(const GpuMat&, vector<Rect>&, double, Size, Size, double, int) { throw_nogpu(); }
 void cv::gpu::HOGDescriptor::getDescriptorsMultiScale(const GpuMat&, Size, double, unsigned int count) { throw_nogpu(); }
@@ -166,6 +166,7 @@ bool cv::gpu::HOGDescriptor::checkDetectorSize() const
     return detector_size == 0 || detector_size == descriptor_size || detector_size == descriptor_size + 1;
 }
 
+// OpenCV expects HOG input detector to be in column major but GPU uses row major
 void cv::gpu::HOGDescriptor::setSVMDetector(const vector<float>& _detector)
 {
     // original code
@@ -174,12 +175,20 @@ void cv::gpu::HOGDescriptor::setSVMDetector(const vector<float>& _detector)
     size_t block_hist_size = getBlockHistogramSize();
     cv::Size blocks_per_img = numPartsWithin(win_size, block_size, block_stride);
 
+    // loop over block rows
     for (int i = 0; i < blocks_per_img.height; ++i)
+      
+	// loop over block columns
         for (int j = 0; j < blocks_per_img.width; ++j)
         {
-            const float* src = &_detector[0] + (j * blocks_per_img.height + i) * block_hist_size;
-            float* dst = &detector_reordered[0] + (i * blocks_per_img.width + j) * block_hist_size;
-            for (size_t k = 0; k < block_hist_size; ++k)
+	    // select source block (column major)
+	    const float* src = &_detector[0] + (j * blocks_per_img.height + i) * block_hist_size;
+            
+	    // select dest block (row major)
+	    float* dst = &detector_reordered[0] + (i * blocks_per_img.width + j) * block_hist_size;
+            
+	    // copy block
+	    for (size_t k = 0; k < block_hist_size; ++k)
                 dst[k] = src[k];
         }
 
@@ -191,9 +200,11 @@ void cv::gpu::HOGDescriptor::setSVMDetector(const vector<float>& _detector)
     CV_Assert(checkDetectorSize());
 }
 
-void cv::gpu::HOGDescriptor::setSVMDetectorDirect(const vector<float>& _detector)
-{
-    // original code
+
+
+// void cv::gpu::HOGDescriptor::setSVMDetectorDirect(const vector<float>& _detector)
+// {
+//     // original code
 //     std::vector<float> detector_reordered(_detector.size());
 // 
 //     size_t block_hist_size = getBlockHistogramSize();
@@ -209,15 +220,17 @@ void cv::gpu::HOGDescriptor::setSVMDetectorDirect(const vector<float>& _detector
 //         }
 // 
 //     this->detector.upload(Mat(detector_reordered).reshape(1, 1));
-    
-    // Shah modification replaces above
-    this->detector.upload(Mat(_detector).reshape(1, 1));
+//     
+//     // Shah modification replaces above
+// //    this->detector.upload(Mat(_detecotr).reshape(1, 1));
+// 
+//     size_t descriptor_size = getDescriptorSize();
+//     free_coef = _detector.size() > descriptor_size ? _detector[descriptor_size] : 0;
+// 
+//     CV_Assert(checkDetectorSize());
+// }
 
-    size_t descriptor_size = getDescriptorSize();
-    free_coef = _detector.size() > descriptor_size ? _detector[descriptor_size] : 0;
 
-    CV_Assert(checkDetectorSize());
-}
 
 cv::gpu::GpuMat cv::gpu::HOGDescriptor::getBuffer(const Size& sz, int type, GpuMat& buf)
 {
@@ -305,6 +318,7 @@ void cv::gpu::HOGDescriptor::getDescriptors(const GpuMat& img, Size win_stride, 
 }
 
 
+// this writes in row major over blocks
 void cv::gpu::HOGDescriptor::getDescriptorsBlock(const GpuMat& img, Size win_stride, GpuMat& descriptors, std::ofstream& fs3, string fileName, double scale, int width, int height, size_t lev)
 {
     CV_Assert(win_stride.width % block_stride.width == 0 && win_stride.height % block_stride.height == 0);
@@ -318,21 +332,17 @@ void cv::gpu::HOGDescriptor::getDescriptorsBlock(const GpuMat& img, Size win_str
     float dest_ptr[block_hist_size * blocks_per_img.area()];
     float src_ptr[block_hist_size * blocks_per_img.area()];
 
-
-    cudaMemcpy( &dest_ptr[0], block_hists.ptr<float>(), block_hist_size *blocks_per_img.area()*sizeof(CV_32F), cudaMemcpyDeviceToHost); 
-
+    // get all blocks for this image
+    cudaMemcpy( &dest_ptr[0], block_hists.ptr<float>(), block_hist_size *blocks_per_img.area()*sizeof(CV_32F), cudaMemcpyDeviceToHost ); 
 
     // write to yml file
-
     int level = lev;
    // int block_hist_sz = block_hist_size;
    
     size_t tot_elements = block_hist_size * blocks_per_img.area();
     int elements = tot_elements;
-
- 
+    
     char eleName[20];
-
     sprintf (eleName, "Level%01d: ", level);
     fs3 << eleName << level << std::endl;
     sprintf (eleName, "blocksperimg%01d: [ ", level);
@@ -574,8 +584,7 @@ void cv::gpu::HOGDescriptor::getDescriptorsMultiScale(const GpuMat& img,
     fs3 << "nbins: "           << nbins         << std::endl;
     fs3 << "block hist size: " << block_hist_sz << std::endl;
 
-
-
+    // compute scale for each level in image pyramid
     for (levels = 0; levels < nlevels; levels++)
     {
         level_scale.push_back(scale);
@@ -588,10 +597,7 @@ void cv::gpu::HOGDescriptor::getDescriptorsMultiScale(const GpuMat& img,
     level_scale.resize(levels);
     image_scales.resize(levels);
 
-
-
-
-
+    // for each level in image pyramid
     for (size_t i = 0; i < level_scale.size(); i++)
     {
         scale = level_scale[i];
@@ -610,17 +616,13 @@ void cv::gpu::HOGDescriptor::getDescriptorsMultiScale(const GpuMat& img,
             }
             smaller_img = image_scales[i];
         }
-        // std::cout<<"scale "<<level_scale[i]<<std::endl;
 
         // calculate descriptors for blocks 
-        getDescriptorsBlock( smaller_img, win_stride, descriptors, fs3, fileName, scale, smaller_img.cols, smaller_img.rows, i+1);
-
+        getDescriptorsBlock( smaller_img, win_stride, descriptors, fs3, fileName, scale, smaller_img.cols, smaller_img.rows, i+1 );
     }
 
-    // close yml file
-    // fs3.release();
-    fs3.close();
-    
+    // close yaml file
+    fs3.close();    
 }
 
 

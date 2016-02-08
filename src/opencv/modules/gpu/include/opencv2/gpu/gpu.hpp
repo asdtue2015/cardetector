@@ -1283,7 +1283,7 @@ struct CV_EXPORTS HOGDescriptor
     size_t getBlockHistogramSize() const;
 
     void setSVMDetector(const vector<float>& detector);
-    void setSVMDetectorDirect(const vector<float>& detector);
+    // void setSVMDetectorDirect(const vector<float>& detector);
     
     static vector<float> getDefaultPeopleDetector();
     static vector<float> getPeopleDetector48x96();
