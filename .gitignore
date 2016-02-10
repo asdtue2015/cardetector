@@ -4,4 +4,6 @@ testBinaryIO
 !testBinaryIO/
 extractor
 !extractor/
+.project
+.cproject
 *~
