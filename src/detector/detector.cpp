@@ -27,6 +27,7 @@ public:
     string src;
     
     bool src_is_video;
+    bool file_gen;
     bool src_is_camera;
    
     int camera_id;
@@ -59,7 +60,7 @@ class App
 {
 public:
     App(const Args& s);
-    void run();
+    void run(int argc, char** argv);
 
     void handleKey(char key);
 
@@ -116,13 +117,14 @@ static void printHelp()
          << "  [--gamma_correct <int>] # do gamma correction or not\n"
          << "  [--write_video <bool>] # write video or not\n"
          << "  [--dst_video <path>] # output video path\n"
-         << "  [--dst_video_fps <double>] # output video fps\n";
+         << "  [--dst_video_fps <double>] # output video fps\n"
+	 << "  [--write_file] # write file in directory fps\n";
     help_showed = true;
 }
 
 
 //Creating .txt with respect to image's name
- void txtGenerator (int argc, char** argv)
+ void write_file (int argc, char** argv, string &write_txt)
 {
 
 // assign path's name to a string
@@ -145,11 +147,11 @@ std::cout << "Txt name: " <<name<<'\n';
 // create the .txt
   myfile.open (name.c_str() );
 // write data inside the .txt
-  myfile << "Vincent.\n";
-  myfile << "Hazem.\n";
+  myfile << write_txt;
+ /* myfile << "Hazem.\n";
   myfile << "Andreas.\n";
   myfile << "Zhengyu.\n";
-  myfile << "Lazaros.\n";
+  myfile << "Lazaros.\n";*/
 // close the .txt
 
   myfile.close(); 
@@ -174,7 +176,7 @@ String detector_out(Rect* r){
         y1=r->y;
         x2=(x1+r->width);
         y2=(y1+r->height);
-        txt_out_string = "NotCar -1 -1 -10 "+to_string(x1)+" "+to_string(y1)+" "+to_string(x2)+" "+to_string(y2)+" -1 -1 -1 -1000 -1000 -1000 -10";
+        txt_out_string = "NotCar -1 -1 -10 "+to_string(x1)+" "+to_string(y1)+" "+to_string(x2)+" "+to_string(y2)+" -1 -1 -1 -1000 -1000 -1000 -10\n";
         cout<<txt_out_string<<endl;
         return txt_out_string;
 }
@@ -192,7 +194,7 @@ int main(int argc, char** argv)
         if (help_showed)
             return -1;
         App app(args);
-        app.run();
+        app.run(argc, argv);
     }
     catch (const Exception& e) { return cout << "error: "  << e.what() << endl, 1; }
     catch (const exception& e) { return cout << "error: "  << e.what() << endl, 1; }
@@ -205,7 +207,7 @@ Args::Args()
     src_is_video = false;
     src_is_camera = false;
     camera_id = 0;
-
+    file_gen = false;
     write_video = false;
     dst_video_fps = 24.;
 
@@ -255,7 +257,7 @@ Args Args::read(int argc, char** argv)
         else if (string(argv[i]) == "--dst_video") args.dst_video = argv[++i];
         else if (string(argv[i]) == "--dst_video_fps") args.dst_video_fps = atof(argv[++i]);
         else if (string(argv[i]) == "--help") printHelp();
-        else if (string(argv[i]) == "--txt_gen") txtGenerator(argc, argv) ;
+        else if (string(argv[i]) == "--write_file") args.file_gen = true;//txtGenerator(argc, argv) ;
 
         else if (string(argv[i]) == "--video") { args.src = argv[++i]; args.src_is_video = true; }
         else if (string(argv[i]) == "--camera") { args.camera_id = atoi(argv[++i]); args.src_is_camera = true; }
@@ -309,7 +311,7 @@ App::App(const Args& s)
 }
 
 
-void App::run()
+void App::run(int argc, char** argv)
 {
 
     // Shah modification replaces below to load detecor in yml file
@@ -365,7 +367,7 @@ void App::run()
     {
         VideoCapture vc;
         Mat frame;
-
+	string write_txt;
         if (args.src_is_video)// if the input is a video
         {
             vc.open(args.src.c_str());
@@ -436,12 +438,12 @@ void App::run()
 
                 Rect r = found[i]; // what should be saved as suggest in a .yml file by the detector.cpp file
 
-                detector_out(&r);
+                write_txt +=detector_out(&r);
 
                 rectangle(img_to_show, r.tl(), r.br(), CV_RGB(0, 255, 0), 3);
 
             }
-		
+		if(args.file_gen) write_file(argc, argv, write_txt);
             if (use_gpu) // here the text is added (fps) to the display both in case of cpu or gpu
                 putText(img_to_show, "Mode: GPU", Point(5, 25), FONT_HERSHEY_SIMPLEX, 1., Scalar(255, 100, 0), 2);
             else
