@@ -13,7 +13,10 @@
 using namespace std;
 using namespace cv;
 
+
+
 bool help_showed = false;
+
 
 class Args
 {
@@ -22,14 +25,17 @@ public:
     static Args read(int argc, char** argv);
 
     string src;
+    
     bool src_is_video;
     bool src_is_camera;
+   
     int camera_id;
 
     bool write_video;
     string dst_video;
     double dst_video_fps;
-
+    
+    
     bool make_gray;
 
     bool resize_src;
@@ -44,7 +50,7 @@ public:
 
     int win_width;
     int win_stride_width, win_stride_height;
-
+	
     bool gamma_corr;
 };
 
@@ -61,6 +67,8 @@ public:
     void hogWorkEnd();
     string hogWorkFps() const;
 
+
+    
     void workBegin();
     void workEnd();
     string workFps() const;
@@ -75,6 +83,7 @@ private:
 
     bool use_gpu;
     bool make_gray;
+    
     double scale;
     int gr_threshold;
     int nlevels;
@@ -111,8 +120,49 @@ static void printHelp()
     help_showed = true;
 }
 
+//Creating .txt with respect to image's name
+ void txtGenerator (int argc, char** argv)
+{
+
+// assign path's name to a string
+string filename="";
+filename = argv[1];
+    
+// get the name of the input image
+
+unsigned firstpoint =filename.find_last_of("/");
+unsigned lastpoint = filename.find_last_of(".");
+
+string name = filename.substr(firstpoint+1, lastpoint-firstpoint-1);
+
+std::cout << "Txt name: " <<name<<'\n';
+
+// assign the name of the input as name of our file   
+  ofstream myfile;
+// specify the extension of our file
+  name += ".txt";
+// create the .txt
+  myfile.open (name.c_str() );
+// write data inside the .txt
+  myfile << "Vincent.\n";
+  myfile << "Hazem.\n";
+  myfile << "Andreas.\n";
+  myfile << "Zhengyu.\n";
+  myfile << "Lazaros.\n";
+// close the .txt
+
+  myfile.close(); 
+
+// Here it ends the .txt coding
+exit(0);
+return;}
+
+
+
 int main(int argc, char** argv)
 {
+
+
     try
     {
         if (argc < 2)
@@ -129,7 +179,6 @@ int main(int argc, char** argv)
     return 0;
 }
 
-
 Args::Args()
 {
     src_is_video = false;
@@ -140,6 +189,7 @@ Args::Args()
     dst_video_fps = 24.;
 
     make_gray = false;
+    
 
     resize_src = false;
     width = 640;
@@ -154,7 +204,6 @@ Args::Args()
     win_width = 64;
     win_stride_width = 8;
     win_stride_height = 8;
-
     gamma_corr = true;
 }
 
@@ -168,6 +217,7 @@ Args Args::read(int argc, char** argv)
         else if (string(argv[i]) == "--resize_src") args.resize_src = (string(argv[++i]) == "true");
         else if (string(argv[i]) == "--width") args.width = atoi(argv[++i]);
         else if (string(argv[i]) == "--height") args.height = atoi(argv[++i]);
+        
         else if (string(argv[i]) == "--hit_threshold")
         {
             args.hit_threshold = atof(argv[++i]);
@@ -184,6 +234,8 @@ Args Args::read(int argc, char** argv)
         else if (string(argv[i]) == "--dst_video") args.dst_video = argv[++i];
         else if (string(argv[i]) == "--dst_video_fps") args.dst_video_fps = atof(argv[++i]);
         else if (string(argv[i]) == "--help") printHelp();
+        else if (string(argv[i]) == "--txt_gen") txtGenerator(argc, argv) ;
+
         else if (string(argv[i]) == "--video") { args.src = argv[++i]; args.src_is_video = true; }
         else if (string(argv[i]) == "--camera") { args.camera_id = atoi(argv[++i]); args.src_is_camera = true; }
         else if (args.src.empty()) args.src = argv[i];
@@ -242,6 +294,8 @@ void App::run()
     // Shah modification replaces below to load detecor in yml file
     // replace commented code below
     FileStorage fs("../../data/carDetector56x48.yml", FileStorage::READ);
+
+    
     int width, height;
     vector<float> detector;
     fs["width"] >> width; 
@@ -250,6 +304,7 @@ void App::run()
     /* loads the detector information from the .yml file (note the .yml file contains
      also the .yml file contain the values for the width and the height and they are read into variables but into the conflicting copy)*/
     fs.release();
+
 
     // automatically set size from yaml file
     Size win_size(width,height); //(64, 128) or (48, 96) or 56,48
@@ -357,10 +412,14 @@ void App::run()
             // Draw positive classified windows  here we draw the green rectangular boxes of the found objects
             for (size_t i = 0; i < found.size(); i++)
             {
-                Rect r = found[i]; // what should be saved as suggest in a .yml file by the detector.cpp file
-                rectangle(img_to_show, r.tl(), r.br(), CV_RGB(0, 255, 0), 3);
-            }
 
+
+                Rect r = found[i]; // what should be saved as suggest in a .yml file by the detector.cpp file
+		
+                rectangle(img_to_show, r.tl(), r.br(), CV_RGB(0, 255, 0), 3);
+
+            }
+		
             if (use_gpu) // here the text is added (fps) to the display both in case of cpu or gpu
                 putText(img_to_show, "Mode: GPU", Point(5, 25), FONT_HERSHEY_SIMPLEX, 1., Scalar(255, 100, 0), 2);
             else
@@ -500,3 +559,7 @@ inline string App::workFps() const
     ss << work_fps;
     return ss.str();
 }
+
+
+
+
