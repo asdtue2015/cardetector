@@ -25,17 +25,17 @@ public:
     static Args read(int argc, char** argv);
 
     string src;
-    
+
     bool src_is_video;
     bool src_is_camera;
-   
+
     int camera_id;
 
     bool write_video;
     string dst_video;
     double dst_video_fps;
-    
-    
+
+
     bool make_gray;
 
     bool resize_src;
@@ -50,7 +50,7 @@ public:
 
     int win_width;
     int win_stride_width, win_stride_height;
-	
+
     bool gamma_corr;
 };
 
@@ -68,7 +68,7 @@ public:
     string hogWorkFps() const;
 
 
-    
+
     void workBegin();
     void workEnd();
     string workFps() const;
@@ -83,7 +83,7 @@ private:
 
     bool use_gpu;
     bool make_gray;
-    
+
     double scale;
     int gr_threshold;
     int nlevels;
@@ -128,7 +128,7 @@ static void printHelp()
 // assign path's name to a string
 string filename="";
 filename = argv[1];
-    
+
 // get the name of the input image
 
 unsigned firstpoint =filename.find_last_of("/");
@@ -138,7 +138,7 @@ string name = filename.substr(firstpoint+1, lastpoint-firstpoint-1);
 
 std::cout << "Txt name: " <<name<<'\n';
 
-// assign the name of the input as name of our file   
+// assign the name of the input as name of our file
   ofstream myfile;
 // specify the extension of our file
   name += ".txt";
@@ -152,7 +152,7 @@ std::cout << "Txt name: " <<name<<'\n';
   myfile << "Lazaros.\n";
 // close the .txt
 
-  myfile.close(); 
+  myfile.close();
 
 // Here it ends the .txt coding
 exit(0);
@@ -210,7 +210,7 @@ Args::Args()
     dst_video_fps = 24.;
 
     make_gray = false;
-    
+
 
     resize_src = false;
     width = 640;
@@ -238,7 +238,7 @@ Args Args::read(int argc, char** argv)
         else if (string(argv[i]) == "--resize_src") args.resize_src = (string(argv[++i]) == "true");
         else if (string(argv[i]) == "--width") args.width = atoi(argv[++i]);
         else if (string(argv[i]) == "--height") args.height = atoi(argv[++i]);
-        
+
         else if (string(argv[i]) == "--hit_threshold")
         {
             args.hit_threshold = atof(argv[++i]);
@@ -265,6 +265,25 @@ Args Args::read(int argc, char** argv)
     return args;
 }
 
+/**
+	Controls
+	
+	The default values for training are shown between braces.
+
+	Hence the flags for training are: --scale 1.12 --nlevels 3 --gr_threshold 0 --hit_threshold 0
+
+	-HOG scale (1.12):
+		Scaling factor between two successive ROI window sizes.
+
+	-Levels count (13):
+		Maximal size of the ROI window. The detector searches using every size from 1 up to that value.
+
+	-HOG group threshold (0):
+		Post-detection grouping of the ROI.
+
+	-Hit threshold (0):
+		Displaces the mathematic decision surface of the SVM model.
+*/
 
 App::App(const Args& s)
 {
@@ -316,12 +335,12 @@ void App::run()
     // replace commented code below
     FileStorage fs("../../data/carDetector56x48.yml", FileStorage::READ);
 
-    
+
     int width, height;
     vector<float> detector;
-    fs["width"] >> width; 
-    fs["height"] >> height; 
-    fs["detector"] >> detector; 
+    fs["width"] >> width;
+    fs["height"] >> height;
+    fs["detector"] >> detector;
     /* loads the detector information from the .yml file (note the .yml file contains
      also the .yml file contain the values for the width and the height and they are read into variables but into the conflicting copy)*/
     fs.release();
@@ -334,7 +353,7 @@ void App::run()
     // original code
     running = true;
     cv::VideoWriter video_writer;
-        
+
 //     Size win_size(args.win_width, args.win_width * 2); //(64, 128) or (48, 96)
 //     Size win_stride(args.win_stride_width, args.win_stride_height);
 
@@ -345,14 +364,14 @@ void App::run()
 //     else
 //         detector = cv::gpu::HOGDescriptor::getPeopleDetector48x96();
 
-    
+
     // non-modified code
     cv::gpu::HOGDescriptor gpu_hog(win_size, Size(16, 16), Size(8, 8), Size(8, 8), 9,
                                    cv::gpu::HOGDescriptor::DEFAULT_WIN_SIGMA, 0.2, gamma_corr,
                                    cv::gpu::HOGDescriptor::DEFAULT_NLEVELS);
     cv::HOGDescriptor cpu_hog(win_size, Size(16, 16), Size(8, 8), Size(8, 8), 9, 1, -1,
                               HOGDescriptor::L2Hys, 0.2, gamma_corr, cv::HOGDescriptor::DEFAULT_NLEVELS);
-    
+
     // Shah modification replaces code below
     gpu_hog.setSVMDetector(detector);// set the detector with the detector values from the .yml file
     cpu_hog.setSVMDetector(detector); // this detector is not compatible with our detector files
@@ -360,7 +379,7 @@ void App::run()
     // original code
 //     gpu_hog.setSVMDetector(detector);
 //     cpu_hog.setSVMDetector(detector);
-    
+
     while (running)
     {
         VideoCapture vc;
@@ -441,7 +460,7 @@ void App::run()
                 rectangle(img_to_show, r.tl(), r.br(), CV_RGB(0, 255, 0), 3);
 
             }
-		
+
             if (use_gpu) // here the text is added (fps) to the display both in case of cpu or gpu
                 putText(img_to_show, "Mode: GPU", Point(5, 25), FONT_HERSHEY_SIMPLEX, 1., Scalar(255, 100, 0), 2);
             else
@@ -449,7 +468,7 @@ void App::run()
             putText(img_to_show, "FPS (HOG only): " + hogWorkFps(), Point(5, 65), FONT_HERSHEY_SIMPLEX, 1., Scalar(255, 100, 0), 2);
             putText(img_to_show, "FPS (total): " + workFps(), Point(5, 105), FONT_HERSHEY_SIMPLEX, 1., Scalar(255, 100, 0), 2);
             imshow("opencv_gpu_hog", img_to_show);
-	    
+
             if (args.src_is_video || args.src_is_camera) vc >> frame;// whether the source is video or from came put update the frame to the capured value
 
             workEnd(); // end the timer of the whole work
@@ -581,7 +600,3 @@ inline string App::workFps() const
     ss << work_fps;
     return ss.str();
 }
-
-
-
-
