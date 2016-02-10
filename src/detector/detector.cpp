@@ -120,6 +120,7 @@ static void printHelp()
     help_showed = true;
 }
 
+
 //Creating .txt with respect to image's name
  void txtGenerator (int argc, char** argv)
 {
@@ -157,6 +158,26 @@ std::cout << "Txt name: " <<name<<'\n';
 exit(0);
 return;}
 
+
+String detector_out(Rect* r){
+        int x1;
+        int x2;
+        int y1;
+        int y2;
+        string txt_out_string;
+        cout<<" r "<<*r<<endl;
+        cout<<" x "<<r->x<<endl;
+        cout<<" y "<<r->y<<endl;
+        cout<<" w "<<r->width<<endl;
+        cout<<" h "<<r->height<<endl;
+        x1=r->x;
+        y1=r->y;
+        x2=(x1+r->width);
+        y2=(y1+r->height);
+        txt_out_string = "NotCar -1 -1 -10 "+to_string(x1)+" "+to_string(y1)+" "+to_string(x2)+" "+to_string(y2)+" -1 -1 -1 -1000 -1000 -1000 -10";
+        cout<<txt_out_string<<endl;
+        return txt_out_string;
+}
 
 
 int main(int argc, char** argv)
@@ -372,7 +393,6 @@ void App::run()
 
         Mat img_aux, img, img_to_show;
         gpu::GpuMat gpu_img;
-
         // Iterate over all frames
         while (running && !frame.empty())// as long as running is set to be true and we still have frames to run then
         {
@@ -415,7 +435,9 @@ void App::run()
 
 
                 Rect r = found[i]; // what should be saved as suggest in a .yml file by the detector.cpp file
-		
+
+                detector_out(&r);
+
                 rectangle(img_to_show, r.tl(), r.br(), CV_RGB(0, 255, 0), 3);
 
             }
