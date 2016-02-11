@@ -60,7 +60,7 @@ class App
 {
 public:
     App(const Args& s);
-    void run(int argc, char** argv);
+    void run();
 
     void handleKey(char key);
 
@@ -124,21 +124,15 @@ static void printHelp()
 
 
 //Creating .txt with respect to image's name
- void write_file (int argc, char** argv, string &write_txt)
-{
 
-// assign path's name to a string
-string filename="";
-filename = argv[1];
-
+ void write_file (string filename, string &write_txt)
+{ 
 // get the name of the input image
-
 unsigned firstpoint =filename.find_last_of("/");
 unsigned lastpoint = filename.find_last_of(".");
 
 string name = filename.substr(firstpoint+1, lastpoint-firstpoint-1);
 name = "N"+name;
-std::cout << "Txt name: " <<name<<'\n';
 
 // assign the name of the input as name of our file
   ofstream myfile;
@@ -148,17 +142,13 @@ std::cout << "Txt name: " <<name<<'\n';
   myfile.open (name.c_str() );
 // write data inside the .txt
   myfile << write_txt;
- /* myfile << "Hazem.\n";
-  myfile << "Andreas.\n";
-  myfile << "Zhengyu.\n";
-  myfile << "Lazaros.\n";*/
 // close the .txt
-
   myfile.close();
-
 // Here it ends the .txt coding
 exit(0);
-return;}
+
+return;
+}
 
 
 String detector_out(Rect* r){
@@ -167,17 +157,17 @@ String detector_out(Rect* r){
         int y1;
         int y2;
         string txt_out_string;
-        cout<<" r "<<*r<<endl;
+        /*cout<<" r "<<*r<<endl;
         cout<<" x "<<r->x<<endl;
         cout<<" y "<<r->y<<endl;
         cout<<" w "<<r->width<<endl;
-        cout<<" h "<<r->height<<endl;
+        cout<<" h "<<r->height<<endl;*/
         x1=r->x;
         y1=r->y;
         x2=(x1+r->width);
         y2=(y1+r->height);
         txt_out_string = "NotCar -1 -1 -10 "+to_string(x1)+" "+to_string(y1)+" "+to_string(x2)+" "+to_string(y2)+" -1 -1 -1 -1000 -1000 -1000 -10\n";
-        cout<<txt_out_string<<endl;
+        //cout<<txt_out_string<<endl;
         return txt_out_string;
 }
 
@@ -194,7 +184,7 @@ int main(int argc, char** argv)
         if (help_showed)
             return -1;
         App app(args);
-        app.run(argc, argv);
+        app.run();
     }
     catch (const Exception& e) { return cout << "error: "  << e.what() << endl, 1; }
     catch (const exception& e) { return cout << "error: "  << e.what() << endl, 1; }
@@ -330,7 +320,7 @@ App::App(const Args& s)
 }
 
 
-void App::run(int argc, char** argv)
+void App::run()
 {
 
     // Shah modification replaces below to load detecor in yml file
@@ -386,7 +376,7 @@ void App::run(int argc, char** argv)
     {
         VideoCapture vc;
         Mat frame;
-        bool frame_is_prev=false;
+        
 	string write_txt;
         if (args.src_is_video)// if the input is a video
         {
@@ -452,19 +442,22 @@ void App::run(int argc, char** argv)
             hogWorkEnd();// end the timer of the hog classification
 
             // Draw positive classified windows  here we draw the green rectangular boxes of the found objects
+            
+          
+            write_txt = "";
             for (size_t i = 0; i < found.size(); i++)
             {
 
 
                 Rect r = found[i]; // what should be saved as suggest in a .yml file by the detector.cpp file
-                if(frame_is_prev==false)
+                
                 write_txt +=detector_out(&r);
 
                 rectangle(img_to_show, r.tl(), r.br(), CV_RGB(0, 255, 0), 3);
 
             }
-
-		if(args.file_gen) write_file(argc, argv, write_txt);
+		
+		if(args.file_gen) write_file(args.src, write_txt);
 
             if (use_gpu) // here the text is added (fps) to the display both in case of cpu or gpu
                 putText(img_to_show, "Mode: GPU", Point(5, 25), FONT_HERSHEY_SIMPLEX, 1., Scalar(255, 100, 0), 2);
@@ -475,7 +468,7 @@ void App::run(int argc, char** argv)
             imshow("opencv_gpu_hog", img_to_show);
 
             if (args.src_is_video || args.src_is_camera) vc >> frame;// whether the source is video or from came put update the frame to the capured value
-            else frame_is_prev=true;
+            
             workEnd(); // end the timer of the whole work
 
             if (args.write_video)
