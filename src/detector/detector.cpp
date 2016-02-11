@@ -126,7 +126,7 @@ static void printHelp()
 //Creating .txt with respect to image's name
 
  void write_file (string filename, string &write_txt)
-{ 
+{
 // get the name of the input image
 unsigned firstpoint =filename.find_last_of("/");
 unsigned lastpoint = filename.find_last_of(".");
@@ -259,10 +259,10 @@ Args Args::read(int argc, char** argv)
 
 /**
 	Controls
-	
+
 	The default values for training are shown between braces.
 
-	Hence the flags for training are: --scale 1.12 --nlevels 3 --gr_threshold 0 --hit_threshold 0
+	Hence the flags for training are: --scale 1.12 --nlevels 13 --gr_threshold 0 --hit_threshold 0
 
 	-HOG scale (1.12):
 		Scaling factor between two successive ROI window sizes.
@@ -376,7 +376,7 @@ void App::run()
     {
         VideoCapture vc;
         Mat frame;
-        
+
 	string write_txt;
         if (args.src_is_video)// if the input is a video
         {
@@ -442,21 +442,21 @@ void App::run()
             hogWorkEnd();// end the timer of the hog classification
 
             // Draw positive classified windows  here we draw the green rectangular boxes of the found objects
-            
-          
+
+
             write_txt = "";
             for (size_t i = 0; i < found.size(); i++)
             {
 
 
                 Rect r = found[i]; // what should be saved as suggest in a .yml file by the detector.cpp file
-                
+
                 write_txt +=detector_out(&r);
 
                 rectangle(img_to_show, r.tl(), r.br(), CV_RGB(0, 255, 0), 3);
 
             }
-		
+
 		if(args.file_gen) write_file(args.src, write_txt);
 
             if (use_gpu) // here the text is added (fps) to the display both in case of cpu or gpu
@@ -468,7 +468,7 @@ void App::run()
             imshow("opencv_gpu_hog", img_to_show);
 
             if (args.src_is_video || args.src_is_camera) vc >> frame;// whether the source is video or from came put update the frame to the capured value
-            
+
             workEnd(); // end the timer of the whole work
 
             if (args.write_video)
