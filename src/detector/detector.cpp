@@ -157,17 +157,17 @@ String detector_out(Rect* r){
         int y1;
         int y2;
         string txt_out_string;
-        cout<<" r "<<*r<<endl;
+        /*cout<<" r "<<*r<<endl;
         cout<<" x "<<r->x<<endl;
         cout<<" y "<<r->y<<endl;
         cout<<" w "<<r->width<<endl;
-        cout<<" h "<<r->height<<endl;
+        cout<<" h "<<r->height<<endl;*/
         x1=r->x;
         y1=r->y;
         x2=(x1+r->width);
         y2=(y1+r->height);
         txt_out_string = "NotCar -1 -1 -10 "+to_string(x1)+" "+to_string(y1)+" "+to_string(x2)+" "+to_string(y2)+" -1 -1 -1 -1000 -1000 -1000 -10\n";
-        cout<<txt_out_string<<endl;
+        //cout<<txt_out_string<<endl;
         return txt_out_string;
 }
 
