@@ -376,7 +376,7 @@ void App::run()
     {
         VideoCapture vc;
         Mat frame;
-        bool frame_is_prev=false;
+        
 	string write_txt;
         if (args.src_is_video)// if the input is a video
         {
@@ -442,12 +442,15 @@ void App::run()
             hogWorkEnd();// end the timer of the hog classification
 
             // Draw positive classified windows  here we draw the green rectangular boxes of the found objects
+            
+          
+            write_txt = "";
             for (size_t i = 0; i < found.size(); i++)
             {
 
 
                 Rect r = found[i]; // what should be saved as suggest in a .yml file by the detector.cpp file
-                if(frame_is_prev==false)
+                
                 write_txt +=detector_out(&r);
 
                 rectangle(img_to_show, r.tl(), r.br(), CV_RGB(0, 255, 0), 3);
@@ -465,7 +468,7 @@ void App::run()
             imshow("opencv_gpu_hog", img_to_show);
 
             if (args.src_is_video || args.src_is_camera) vc >> frame;// whether the source is video or from came put update the frame to the capured value
-            else frame_is_prev=true;
+            
             workEnd(); // end the timer of the whole work
 
             if (args.write_video)
