@@ -137,7 +137,7 @@ unsigned firstpoint =filename.find_last_of("/");
 unsigned lastpoint = filename.find_last_of(".");
 
 string name = filename.substr(firstpoint+1, lastpoint-firstpoint-1);
-
+name = "N"+name;
 std::cout << "Txt name: " <<name<<'\n';
 
 // assign the name of the input as name of our file
