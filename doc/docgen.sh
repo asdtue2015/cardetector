@@ -6,3 +6,4 @@ mkdir /tmp/doxydoc
 doxygen .Doxyfile 2>&1 || { echo >&2 "Error while running doxygen.  Aborting."; exit 1; }
 make --quiet -C /tmp/doxydoc/latex/ 2>&1 || { echo >&2 "Error while generating the PDF.  Aborting."; exit 1; }
 mv /tmp/doxydoc/latex/refman.pdf ./refman.pdf
+dot -Tpdf workflow.gv -o workflow.pdf

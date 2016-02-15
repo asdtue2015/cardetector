@@ -1,0 +1,43 @@
+digraph G {
+	training_images [label="training images\n(.png)"];
+	training_labels [label="ROIs labels\n(.txt)"];
+	extractor [shape=box,label="HOG features extraction\n(extractor.cpp)"];
+	image_hog [label="image HOG features\n(.yml)"];
+	positive_samples_m [shape=box,label="positive HOG features extraction\n(positive_write_sample.m)"];
+	negative_samples_m [shape=box,label="negative HOG features extraction\n(negative_write_sample.m)"];
+	postive_samples_hog [label="matrix of positive HOG features\n(.mat)"]
+	negative_samples_hog [label="matrix of negative HOG features\n(.mat)"]
+	detector_training_m [shape=box,label="SVM detector training\n(SVM_training.m)"];
+	detector_file [label="detector\n(.yml)"]
+	detector_cpp [shape=box,label="image analysis\n(detector.cpp)"];
+	labels_detected [label="detected ROIs\n(.txt)"]
+	sort_labels_m [shape=box,label="hard negatives selection & extraction\n(negative_mining_write_sample.m)"];
+	hard_negatives_hog [label="matrix of hard negative HOG features\n(.mat)"]
+
+	training_images -> training_labels;
+	training_images -> extractor;
+	training_labels -> positive_samples_m;
+	training_labels -> negative_samples_m;
+	training_labels -> extractor;
+	extractor -> image_hog;
+	image_hog -> positive_samples_m;
+	image_hog -> negative_samples_m;
+	positive_samples_m -> postive_samples_hog;
+	negative_samples_m -> negative_samples_hog;
+	postive_samples_hog -> detector_training_m;
+	negative_samples_hog -> detector_training_m;
+	detector_training_m -> detector_file;
+	detector_file -> detector_cpp;
+	training_images -> detector_cpp;
+	detector_cpp -> labels_detected;
+	labels_detected -> sort_labels_m;
+	training_labels -> sort_labels_m;
+	sort_labels_m -> hard_negatives_hog;
+	hard_negatives_hog -> negative_samples_hog;
+
+	{ rank = same; "postive_samples_hog"; "negative_samples_hog"; };
+	{ rank = same; "training_images"; "training_labels"; };
+
+	labelloc="t";
+    label="Hard negatives mining process\n	";
+}
