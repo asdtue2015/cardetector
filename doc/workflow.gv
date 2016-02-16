@@ -7,8 +7,8 @@ digraph G {
 	negative_samples_m [shape=box,label="negative HOG features extraction\n(negative_write_sample.m)"];
 	postive_samples_hog [label="matrix of positive HOG features\n(.mat)"]
 	negative_samples_hog [label="matrix of negative HOG features\n(.mat)"]
-	detector_training_m [shape=box,label="SVM detector training\n(SVM_training.m)"];
-	detector_file [label="detector\n(.yml)"]
+	detector_training_m [shape=box,label="SVM classifier training\n(SVM_training.m)"];
+	detector_file [label="classifier\n(.yml)"]
 	detector_cpp [shape=box,label="image analysis\n(detector.cpp)"];
 	labels_detected [label="detected ROIs\n(.txt)"]
 	sort_labels_m [shape=box,label="hard negatives selection & extraction\n(negative_mining_write_sample.m)"];
