@@ -10,6 +10,13 @@
 #include "opencv2/gpu/gpu.hpp"
 #include "opencv2/highgui/highgui.hpp"
 
+#include <sys/types.h> // for "stat" function
+#include <sys/stat.h>
+#include <unistd.h>
+
+#include <sys/types.h> // for "opendir" function
+#include <dirent.h>
+
 using namespace std;
 using namespace cv;
 
@@ -29,6 +36,7 @@ public:
     bool src_is_video;
     bool file_gen;
     bool src_is_camera;
+	bool src_is_directory;
 
     int camera_id;
 
@@ -145,7 +153,6 @@ name = "N"+name;
 // close the .txt
   myfile.close();
 // Here it ends the .txt coding
-exit(0);
 
 return;
 }
@@ -196,6 +203,7 @@ Args::Args()
 {
     src_is_video = false;
     src_is_camera = false;
+	src_is_directory = false;
     camera_id = 0;
     file_gen = false;
     write_video = false;
@@ -372,6 +380,35 @@ void App::run()
 //     gpu_hog.setSVMDetector(detector);
 //     cpu_hog.setSVMDetector(detector);
 
+
+	// find out if the input is a directory
+	struct stat path_stat;
+	DIR *dp;
+	struct dirent *ep;
+	char *point;
+	string directory_name;
+
+	if( (!args.src_is_video) && (!args.src_is_camera) ) // first, make sure we are not dealing with a video or camera
+	{
+		stat(args.src.c_str(), &path_stat);
+		if( S_ISDIR(path_stat.st_mode) == 1 )
+		{
+			args.src_is_directory = true;
+		    dp = opendir(args.src.c_str());
+
+		    if (dp == NULL)
+			{
+				perror("Couldn't open the directory");
+				exit(-1);
+			}
+
+			directory_name=args.src; // store the original path so it will not be overwritten
+
+			if(directory_name.back() != '/') // check for missing slash at the end of directory path
+				directory_name.append("/");
+		}
+	}
+
     while (running)
     {
         VideoCapture vc;
@@ -398,6 +435,27 @@ void App::run()
         }
         else // in case the input is just an image
         {
+			if(args.src_is_directory == true)
+			{
+				// prepare next image of directory
+				running = false; // by default, we assume there will be no more image available
+
+				while (ep = readdir (dp)) // iterate until we find the next image
+			    {
+					if((point = strrchr(ep->d_name,'.')) != NULL )
+					{
+		       			if(strcmp(point,".png") == 0 || strcmp(point,".jpg") == 0) // check extension for image type
+						{
+							// we found an image
+							running = true; // we can run something during the next loop
+							args.src = directory_name + string(ep->d_name); // create full path to image file
+							cout << "Processing: " << args.src << "\n";
+							break; // stop searching some next image
+						}
+					}
+				}
+			}
+
             frame = imread(args.src);
             if (frame.empty())
                 throw runtime_error(string("can't open image file: " + args.src));
@@ -457,7 +515,15 @@ void App::run()
 
             }
 
-		if(args.file_gen) write_file(args.src, write_txt);
+			if(args.file_gen)
+			{
+				write_file(args.src, write_txt);
+
+				if (!args.src_is_directory && !args.src_is_video && !args.src_is_camera) // if processing a single file
+					running=false; // then don't loop on the current image
+
+				break; // don't display anything (much faster!)
+			}
 
             if (use_gpu) // here the text is added (fps) to the display both in case of cpu or gpu
                 putText(img_to_show, "Mode: GPU", Point(5, 25), FONT_HERSHEY_SIMPLEX, 1., Scalar(255, 100, 0), 2);
@@ -467,8 +533,7 @@ void App::run()
             putText(img_to_show, "FPS (total): " + workFps(), Point(5, 105), FONT_HERSHEY_SIMPLEX, 1., Scalar(255, 100, 0), 2);
             imshow("opencv_gpu_hog", img_to_show);
 
-            if (args.src_is_video || args.src_is_camera) vc >> frame;// whether the source is video or from came put update the frame to the capured value
-
+            if (args.src_is_video || args.src_is_camera) vc >> frame;// whether the source is video or from camera put update the frame to the capured value
             workEnd(); // end the timer of the whole work
 
             if (args.write_video)
@@ -488,6 +553,9 @@ void App::run()
             }
                 // produce an output video from the results
             handleKey((char)waitKey(3));
+
+			if (args.src_is_directory) break; // if processing a folder, get the next image instead of looping
+
         }
     }
 }
