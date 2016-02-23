@@ -440,7 +440,7 @@ void App::run()
 				// prepare next image of directory
 				running = false; // by default, we assume there will be no more image available
 
-				while (ep = readdir (dp)) // iterate until we find the next image
+				while ( (ep = readdir (dp)) ) // iterate until we find the next image
 			    {
 					if((point = strrchr(ep->d_name,'.')) != NULL )
 					{
