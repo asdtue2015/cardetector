@@ -8,3 +8,5 @@ extractor
 .cproject
 *~
 *.pdf
+CMakeCache.txt
+CMakeFiles/
