@@ -182,7 +182,7 @@ String detector_out(Rect* r){
 int main(int argc, char** argv)
 {
 
-
+    cout<<"Current opencv version is "<<CV_VERSION<<endl;
     try
     {
         if (argc < 2)
