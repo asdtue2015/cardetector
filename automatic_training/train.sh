@@ -2,11 +2,16 @@
 STEPS=3
 BATCH_SIZE=20
 IMAGE_DIR="$HOME/Projects/TUE_Multiclass_Detector/data/image_2"
-DETECTOR_DIR="$HOME/asd2015dev/vincent/src/detector"
+DETECTOR_DIR="$HOME/asd2015dev/autotrain/src/detector"
 LOCAL_DIR=$(pwd)
+
+# compile the detector
+(cd "$DETECTOR_DIR"; )
 
 for i in `seq 0 $STEPS`;
 do	# every step
+
+	# backup the classifier
 
 	# create hard links to the files
 	k=0 # files are renamed starting at 0 every time because the matlab script needs this...
@@ -17,16 +22,13 @@ do	# every step
 	done
 
 	# run the detector
-	(cd "$DETECTOR_DIR"; ./detector $LOCAL_DIR --write_file)
+	(cd "$DETECTOR_DIR"; ./detector --scale 1.12 --nlevels 13 --gr_threshold 0 --hit_threshold 0 $LOCAL_DIR --write_file)
 	find $DETECTOR_DIR -name "*.txt" -exec mv -i -t $LOCAL_DIR {} +;
 
 	# perform hard negative mining
-
-	# backup the negative HOG features
-
 	# concat to existing negative HOG features
 
-	# backup the classifier
+	# backup the negative HOG features
 
 	# train the classifier
 
