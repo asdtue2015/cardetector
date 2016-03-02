@@ -8,7 +8,7 @@ cd([ROOT_DIR,'matlab/samples/positive']);
 addpath '../../tools'
 
 %% options
-data_dir = [ROOT_DIR,'/data'];
+data_dir = 'F:\Car detect\data';
 data_set = '';
 
 %% get label directory
@@ -28,8 +28,8 @@ nymls   = length(dir(fullfile(hog_dir, '*.yml')));
 img_idx = 0;
 count   = 1;
 bigmat  = [];
-for lab_idx = 1:1:min([nlabels nimages])-1
-    
+%for lab_idx = 1:1:min([nlabels nimages])-1
+   lab_idx=3; 
     %% parse the label files
     objects = readLabels(label_dir,lab_idx);
     
@@ -107,8 +107,10 @@ for lab_idx = 1:1:min([nlabels nimages])-1
             
         end
     end
-end
+    
+    fclose('all');
+%end
 
 %% save for training
-save('../../../data/positive_features.mat', 'bigmat');
+%save('../../../data/positive_features_v3.mat', 'bigmat');
 

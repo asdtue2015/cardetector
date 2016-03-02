@@ -8,20 +8,20 @@ cd([ROOT_DIR,'matlab/samples/positive']);
 addpath '../../tools'
 
 %% options
-data_dir = [ROOT_DIR,'/data'];
+data_dir = 'F:\Car detect\data';
 data_set = '';
 
 %% get label directory
 cam = 2; % 2 = left color camera
-label_dir = fullfile(data_dir,[data_set '/label_' num2str(cam)]);
+label_dir = 'F:\Car detect\data\label_2';      % read positive labels
 nlabels   = length(dir(fullfile(label_dir, '*.txt')));
 
 %% image input
-image_dir = fullfile(data_dir,[data_set '/image_' num2str(cam)]);
+image_dir = 'F:\Car detect\data\image_2';
 nimages   = length(dir(fullfile(image_dir, '*.png')));
 
 %% HOG block input
-hog_dir = fullfile(data_dir,[data_set '/hog_' num2str(cam)]);
+hog_dir = 'F:\Car detect\data\hog_2';
 nymls   = length(dir(fullfile(hog_dir, '*.yml')));
 
 %% main loop
@@ -39,7 +39,7 @@ for lab_idx = 1:1:min([nlabels nimages])-1
         
         %% get type of object
         s1 = objects(a).type;
-        ostring = 'Car';
+        ostring = 'Pedestrian';
         xbegin  = objects(a).x1;
         ybegin  = objects(a).y1;
         width   = objects(a).x2-objects(a).x1;
@@ -48,7 +48,7 @@ for lab_idx = 1:1:min([nlabels nimages])-1
        % angle   = objects(a).alpha;
         
         %% is this an oject of interest
-        state = not(strcmp(objects(a).type,ostring)) | (objects(a).truncation>0.15) | (objects(a).occlusion==2) | (objects(a).occlusion==3) | (height<48) | (objects(a).alpha >= -pi/2+0.25) | (objects(a).alpha <= -pi/2-0.25);
+        state = not(strcmp(objects(a).type,ostring)) | (objects(a).truncation>0.15) | (objects(a).occlusion==2) | (objects(a).occlusion==3) | (height<48) ;
         
         %% found another object of interest
         if (state == 0)
@@ -107,8 +107,10 @@ for lab_idx = 1:1:min([nlabels nimages])-1
             
         end
     end
+    
+    fclose('all');
 end
 
 %% save for training
-save('../../../data/positive_features.mat', 'bigmat');
+save('../../../data/positive_features_pedestrain.mat', 'bigmat');
 

@@ -37,18 +37,18 @@ for lab_idx = 0:1:min([nlabels nimages])-1
     
     %% get all car rectrangles
     t      = 1;
-    car_pt = [];
+    ped_pt = [];
     for a = 1:total_obj
         
         % get the object label type
         type = objects(a).type;        
 
         % get left, top, right, bottom pixel coordinates for all cars in image
-        if strcmp( type, 'Car' )
+        if strcmp( type, 'Pedestrian' )
 %             img_idx =  img_idx + 1; % total of 'Car' 
 
             %% save the roi
-            car_pt.(['c',num2str(t)]) = [objects(a).x1,objects(a).y1,objects(a).x2-objects(a).x1+1,objects(a).y2-objects(a).y1+1]; % get x1, y1, width, height
+            ped_pt.(['c',num2str(t)]) = [objects(a).x1,objects(a).y1,objects(a).x2-objects(a).x1+1,objects(a).y2-objects(a).y1+1]; % get x1, y1, width, height
             t = t + 1;  
         end
     end
@@ -65,15 +65,15 @@ for lab_idx = 0:1:min([nlabels nimages])-1
         %% Iterate through all 'Car' label and check for collision
         if (t>1)                                          % if there is a 'Car' in label and we have read the labels 
             collision = true;                             % initalize collision to 'true'
-            structSize = length(fieldnames(car_pt));      % get total No. of 'Cars'in a label  
+            structSize = length(fieldnames(ped_pt));      % get total No. of 'Cars'in a label  
             while (collision == true)                     % iterate through all 'Car' label
                 [x, y, w ,h] = generate_rectangle_56x48( size(img), 4 ); % generate a roi
                 test = logical(ones(1,structSize));
                 for b = 1:1:structSize                         % 
-                    x1 = car_pt.(['c',num2str(b)])((1));       % get x1
-                    y1 = car_pt.(['c',num2str(b)])((2));       % get y1
-                    x2 = car_pt.(['c',num2str(b)])((3));       % get width 
-                    y2 = car_pt.(['c',num2str(b)])((4));       % get height 
+                    x1 = ped_pt.(['c',num2str(b)])((1));       % get x1
+                    y1 = ped_pt.(['c',num2str(b)])((2));       % get y1
+                    x2 = ped_pt.(['c',num2str(b)])((3));       % get width 
+                    y2 = ped_pt.(['c',num2str(b)])((4));       % get height 
                     test(b) = rectangle_collision(x1,y1,x2,y2,x,y,w,h); % check for collision, add the result to a cell to test 
                 end
                 collision = any(test == 1);
@@ -89,18 +89,20 @@ for lab_idx = 0:1:min([nlabels nimages])-1
         bigmat(count,:)= out(1,:);
         
         %% write the roi of the object to an image
-        sprintf('%06d_neg_%1d.png', lab_idx, j )
+       sprintf('%06d_neg_%1d.png', lab_idx, j )
          img_rsz  = imresize( img, 1/window(5) );
          img_crop = imcrop( img, [window(1,1) window(1,2) window(1,3)-1 window(1,4)-1] );
          figure(2)
          imshow(img_crop)
-%         imwrite( img_crop, sprintf('%06d_neg_%1d.png', lab_idx, j ) );
+        %imwrite( img_crop, sprintf('%06d_neg_%1d.png', lab_idx, j ) );
         
     end
+    
+    fclose('all');
 end
 
 %% save for training
-save('../../../data/negative_features.mat', 'bigmat');
+save('../../../data/negative_features_pedestrain.mat', 'bigmat');
 
 
 

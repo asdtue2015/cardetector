@@ -8,7 +8,7 @@ cd([ROOT_DIR,'matlab/samples/positive']);
 addpath '../../tools'
 
 %% options
-data_dir = [ROOT_DIR,'/data'];
+data_dir = 'F:\Car detect\data';
 data_set = '';
 
 %% get label directory
@@ -48,7 +48,7 @@ for lab_idx = 1:1:min([nlabels nimages])-1
        % angle   = objects(a).alpha;
         
         %% is this an oject of interest
-        state = not(strcmp(objects(a).type,ostring)) | (objects(a).truncation>0.15) | (objects(a).occlusion==2) | (objects(a).occlusion==3) | (height<48) | (objects(a).alpha >= -pi/2+0.25) | (objects(a).alpha <= -pi/2-0.25);
+        state = not(strcmp(objects(a).type,ostring)) | (objects(a).truncation>0.15) | (objects(a).occlusion==2) | (objects(a).occlusion==3) | (height<48) | (objects(a).alpha >= pi/2+0.25) | (objects(a).alpha <= pi/2-0.25);
         
         %% found another object of interest
         if (state == 0)
@@ -107,8 +107,10 @@ for lab_idx = 1:1:min([nlabels nimages])-1
             
         end
     end
+    
+    fclose('all');
 end
 
 %% save for training
-save('../../../data/positive_features.mat', 'bigmat');
+save('../../../data/positive_features_front.mat', 'bigmat');
 

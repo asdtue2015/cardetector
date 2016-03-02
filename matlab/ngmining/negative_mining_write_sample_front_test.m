@@ -15,13 +15,13 @@ cam = 2; % 2 = left color camera
 nclabel_dir = fullfile(data_dir,[data_set '/nclabelfront_' num2str(cam)]);  % read Notcar labels
 nnclabels   = length(dir(fullfile(nclabel_dir, '*.txt')));
 
-label_dir = fullfile(data_dir,[data_set '/label_' num2str(cam)]);      % read positive labels
+label_dir = 'F:\Car detect\data\label_2';      % read positive labels
 nlabels   = length(dir(fullfile(label_dir, '*.txt')));
 %% image input
-image_dir = fullfile(data_dir,[data_set '/image_' num2str(cam)]);
+image_dir = 'F:\Car detect\data\image_2';
 nimages   = length(dir(fullfile(image_dir, '*.png')));
 %% HOG block input
-hog_dir = fullfile(data_dir,[data_set '/hog_' num2str(cam)]);
+hog_dir = 'F:\Car detect\data\hog_2';
 nymls   = length(dir(fullfile(hog_dir, '*.yml')));
 
 %% main loop
@@ -30,7 +30,7 @@ bigmat  = importdata('../../data/negative_features.mat');
 ncbigmat = [] ;
 %%
 %for lab_idx = 0:1:min([nnclabels nimages])-1   
-    lab_idx = 10;
+    lab_idx = 13;
     %% parse the label files
     objects   = readLabels(label_dir,lab_idx);                   %read car labels
     total_obj = length(objects);                                 % No. of all the cars
@@ -132,8 +132,8 @@ ncbigmat = [] ;
                 rectangle('Position',cpos,'EdgeColor','blue')
                 
                 
-                %test(b) = rectangle_collision(x1,y1,x2,y2,x,y,w,h); % check for overlaps between NotCar and Car, add the result to a cell to test
-               test(b) = collision_area_based(x1,y1,x2,y2,x,y,w,h);
+                test(b) = rectangle_collision(x1,y1,x2,y2,x,y,w,h); % check for overlaps between NotCar and Car, add the result to a cell to test
+               % test(b) = collision_centroids_based(x1,y1,x2,y2,x,y,w,h);
                 
 %                 if(test(b))                     
 %                     figure(1)
@@ -155,8 +155,8 @@ ncbigmat = [] ;
                      rectangle('Position',dcpos,'EdgeColor','magenta')
                 
                      
-                      %dctest(b) = rectangle_collision(x1,y1,x2,y2,x,y,w,h); % check for overlaps between NotCar and Dontcare, add the result to a cell to test 
-                   dctest(b) = collision_area_based(x1,y1,x2,y2,x,y,w,h);
+                      dctest(b) = rectangle_collision(x1,y1,x2,y2,x,y,w,h); % check for overlaps between NotCar and Dontcare, add the result to a cell to test 
+                   % dctest(b) = collision_centroids_based(x1,y1,x2,y2,x,y,w,h);
                     
 %                     if(dctest(b))
 %                        
