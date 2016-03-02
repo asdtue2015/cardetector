@@ -69,7 +69,7 @@ class App
 public:
     App(const Args& s);
     void run();
-
+    void before_run();
     void handleKey(char key);
 
     void hogWorkBegin();
@@ -104,6 +104,19 @@ private:
 
     int64 work_begin;
     double work_fps;
+
+    int width_run, height_run;
+    vector<float> detector;
+    cv::VideoWriter video_writer;
+    cv::gpu::HOGDescriptor gpu_hog;
+    cv::HOGDescriptor cpu_hog;
+    Size win_size;
+    Size win_stride;
+    DIR *dp;
+    struct dirent *ep;
+    char *point;
+    string directory_name;
+
 };
 
 static void printHelp()
@@ -182,7 +195,7 @@ String detector_out(Rect* r){
 int main(int argc, char** argv)
 {
 
-    cout<<"Current opencv version is "<<CV_VERSION<<endl;
+    cout <<"Current opencv version is "<<CV_VERSION<<endl;
     try
     {
         if (argc < 2)
@@ -191,6 +204,7 @@ int main(int argc, char** argv)
         if (help_showed)
             return -1;
         App app(args);
+        app.before_run();
         app.run();
     }
     catch (const Exception& e) { return cout << "error: "  << e.what() << endl, 1; }
@@ -327,32 +341,32 @@ App::App(const Args& s)
     cout << endl;
 }
 
-
-void App::run()
+void App::before_run()
 {
-
-    // Shah modification replaces below to load detecor in yml file
+// Shah modification replaces below to load detecor in yml file
     // replace commented code below
-    FileStorage fs("../../data/carDetector56x48.yml", FileStorage::READ);
+    FileStorage fs("../../data/carDetector56x48_front_ov_100h.yml", FileStorage::READ);
 
 
-    int width, height;
-    vector<float> detector;
-    fs["width"] >> width;
-    fs["height"] >> height;
+    
+    fs["width"] >> width_run;
+    fs["height"] >> height_run;
     fs["detector"] >> detector;
-    /* loads the detector information from the .yml file (note the .yml file contains
-     also the .yml file contain the values for the width and the height and they are read into variables but into the conflicting copy)*/
+    // loads the detector information from the .yml file (note the .yml file contains
+    // also the .yml file contain the values for the width and the height and they are read into variables but into the conflicting copy)
     fs.release();
 
 
     // automatically set size from yaml file
-    Size win_size(width,height); //(64, 128) or (48, 96) or 56,48
-    Size win_stride(args.win_stride_width, args.win_stride_height);
-
+    //Size win_size(width_run,height_run); //(64, 128) or (48, 96) or 56,48
+    //Size win_stride(args.win_stride_width, args.win_stride_height);
+    win_size.width = width_run;
+    win_size.height = height_run;
+    win_stride.width = args.win_stride_width;
+    win_stride.height = args.win_stride_height;
     // original code
     running = true;
-    cv::VideoWriter video_writer;
+    
 
 //     Size win_size(args.win_width, args.win_width * 2); //(64, 128) or (48, 96)
 //     Size win_stride(args.win_stride_width, args.win_stride_height);
@@ -366,10 +380,10 @@ void App::run()
 
 
     // non-modified code
-    cv::gpu::HOGDescriptor gpu_hog(win_size, Size(16, 16), Size(8, 8), Size(8, 8), 9,
+    gpu_hog = cv::gpu::HOGDescriptor(win_size, Size(16, 16), Size(8, 8), Size(8, 8), 9,
                                    cv::gpu::HOGDescriptor::DEFAULT_WIN_SIGMA, 0.2, gamma_corr,
                                    cv::gpu::HOGDescriptor::DEFAULT_NLEVELS);
-    cv::HOGDescriptor cpu_hog(win_size, Size(16, 16), Size(8, 8), Size(8, 8), 9, 1, -1,
+    cpu_hog = cv::HOGDescriptor(win_size, Size(16, 16), Size(8, 8), Size(8, 8), 9, 1, -1,
                               HOGDescriptor::L2Hys, 0.2, gamma_corr, cv::HOGDescriptor::DEFAULT_NLEVELS);
 
     // Shah modification replaces code below
@@ -381,34 +395,36 @@ void App::run()
 //     cpu_hog.setSVMDetector(detector);
 
 
-	// find out if the input is a directory
-	struct stat path_stat;
-	DIR *dp;
-	struct dirent *ep;
-	char *point;
-	string directory_name;
+    // find out if the input is a directory
+    struct stat path_stat;
+    
+    
 
-	if( (!args.src_is_video) && (!args.src_is_camera) ) // first, make sure we are not dealing with a video or camera
-	{
-		stat(args.src.c_str(), &path_stat);
-		if( S_ISDIR(path_stat.st_mode) == 1 )
-		{
-			args.src_is_directory = true;
-		    dp = opendir(args.src.c_str());
+    if( (!args.src_is_video) && (!args.src_is_camera) ) // first, make sure we are not dealing with a video or camera
+    {
+        stat(args.src.c_str(), &path_stat);
+        if( S_ISDIR(path_stat.st_mode) == 1 )
+        {
+            args.src_is_directory = true;
+            dp = opendir(args.src.c_str());
 
-		    if (dp == NULL)
-			{
-				perror("Couldn't open the directory");
-				exit(-1);
-			}
+            if (dp == NULL)
+            {
+                perror("Couldn't open the directory");
+                exit(-1);
+            }
 
-			directory_name=args.src; // store the original path so it will not be overwritten
+            directory_name=args.src; // store the original path so it will not be overwritten
 
-			if(directory_name.back() != '/') // check for missing slash at the end of directory path
-				directory_name.append("/");
-		}
-	}
-
+            if(directory_name.back() != '/') // check for missing slash at the end of directory path
+                directory_name.append("/");
+        }
+    }
+}
+void App::run()
+{
+    
+    
     while (running)
     {
         VideoCapture vc;
