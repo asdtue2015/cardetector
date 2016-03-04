@@ -31,8 +31,7 @@ pos_samples      = pos_samples_file.bigmat;
 %% Original negative matrix input for SVM training
 exbigmat  = importdata(fullfile(data_dir,'/negative_features.mat'));             % Oringinal negative matrix path
 
-%% Path to put the new classifier
-fid = fopen('../../data/carDetector56x48.yml','w');                 % creat the new SVM classifier set output path HERE !!!!!
+
 
 
 %% main loop
@@ -205,7 +204,7 @@ end
 %%
 exbigmat=[exbigmat;bigmat];                % Combine NG matrix with original matrix
 
-%save('../../data/negative_features.mat', 'exbigmat','-v7.3');
+save('../../data/negative_features.mat', 'exbigmat','-v7.3');
 
 %% %%%%%%%%%%%%
 % SVM %%%%%%%%%
@@ -224,6 +223,9 @@ SVMModel = fitcsvm( [pos_samples;neg_samples], labels );
 
 %% write yml the classifiers file
 
+%% Path to put the new classifier
+fid = fopen('../../data/carDetector56x48.yml','w');                 % creat the new SVM classifier set output path HERE !!!!!
+fid
 fprintf(fid,'%%YAML:1.0\n');
 fprintf(fid,'width: %i\n',window(1));
 fprintf(fid,'height: %i\n',window(2));

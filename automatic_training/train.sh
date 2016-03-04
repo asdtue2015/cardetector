@@ -1,6 +1,6 @@
 #!/bin/bash
-STEPS=3
-BATCH_SIZE=20
+STEPS=24
+BATCH_SIZE=300
 MASTER_DIR="$HOME/Projects/TUE_Multiclass_Detector"
 LOCAL_DIR=$(pwd)/..
 
@@ -25,7 +25,7 @@ MATLAB=~/MATLAB/R2015b/bin/matlab
 (cd "$LOCAL_DIR/src/detector"; rm CMakeCache.txt; rm -r CMakeFiles; rm detector; cmake .; make)
 
 for i in `seq 0 $STEPS`;
-do	# every stepl
+do	# every step
 
 	# backup the classifier
 	(cp ../data/carDetector56x48.yml ./carDetector56x48.yml.backup$i)
@@ -44,14 +44,19 @@ do	# every stepl
 	(cd "$LOCAL_DIR/src/detector"; ./detector --scale 1.12 --nlevels 13 --gr_threshold 0 --hit_threshold 0 $LOCAL_DIR/data/image_2 --write_file)
 	find $LOCAL_DIR/src/detector -name "*.txt" -exec mv -i -t $LOCAL_DIR/data/nclabel_2 {} +;
 
+	# count the number of hard negatives
+#	(cd $LOCAL_DIR/data/nclabel_2; find . | xargs wc -l)
+
 	# perform hard negative mining
 	# concat to existing negative HOG features
 	# train the classifier
 	(cd $LOCAL_DIR/matlab/automatic; $MATLAB -nodesktop -nosplash -nojvm < ngmining_training.m)
+		# FIXME change call to have a quit, like: matlab -nodesktop -nodisplay -r "cd folder2/; run('mycode.m'); quit"  < /dev/null  > output.txt
 
 	# clean images and labels
 	ls $LOCAL_DIR
+	rm $LOCAL_DIR/data/hog_2/*.yml
 	rm $LOCAL_DIR/data/image_2/*.png
 	rm $LOCAL_DIR/data/label_2/*.txt
-	rm $LOCAL_DIR/data/hog_2/*.yml
+	rm $LOCAL_DIR/data/nclabel_2/*.txt
 done
