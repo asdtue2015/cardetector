@@ -22,7 +22,7 @@ MATLAB=~/MATLAB/R2015b/bin/matlab
  )
 
 # compile the detector
-(cd "$LOCAL_DIR/src/detector"; rm CMakeCache.txt; rm -r CMakeFiles; rm detector; cmake .; make)
+(cd "$LOCAL_DIR/src/detector"; rm CMakeCache.txt; rm -r CMakeFiles; rm -f detector; cmake .; make)
 
 for i in `seq 0 $STEPS`;
 do	# every step
@@ -45,7 +45,7 @@ do	# every step
 	find $LOCAL_DIR/src/detector -name "*.txt" -exec mv -i -t $LOCAL_DIR/data/nclabel_2 {} +;
 
 	# count the number of hard negatives
-#	(cd $LOCAL_DIR/data/nclabel_2; find . | xargs wc -l)
+	(cd $LOCAL_DIR/data/nclabel_2; find . -name 'N*.txt' | xargs wc -l)
 
 	# perform hard negative mining
 	# concat to existing negative HOG features
