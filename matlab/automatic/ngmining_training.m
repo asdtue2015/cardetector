@@ -24,9 +24,6 @@ nimages   = length(dir(fullfile(image_dir, '*.png')));
 hog_dir = fullfile(data_dir,[data_set '/hog_' num2str(cam)]);          % HOG directory
 nymls   = length(dir(fullfile(hog_dir, '*.yml')));
 
-%% Positive matrix input for SVM training
-pos_samples_file = matfile(fullfile(data_dir,'/positive_features.mat'));  % Path of original positive matrix
-pos_samples      = pos_samples_file.bigmat;
 
 %% Original negative matrix input for SVM training
 exbigmat  = importdata(fullfile(data_dir,'/negative_features.mat'));             % Oringinal negative matrix path
@@ -209,9 +206,19 @@ save('../../data/negative_features.mat', 'exbigmat','-v7.3');
 %% %%%%%%%%%%%%
 % SVM %%%%%%%%%
 %%%%%%%%%%%%%%%%%%
+clear all;
+
+pos_samples_file = matfile('../../data/positive_features.mat');  % Path of original positive matrix
+pos_samples      = pos_samples_file.bigmat;
+
+neg_samples_file = matfile('../../data/negative_features.mat');  % Path of original positive matrix
+neg_samples      = neg_samples_file.exbigmat;
+
+
+
+
 window           = [56 48];
 npos             = size(pos_samples,1);
-neg_samples      = exbigmat;
 nneg             = size(neg_samples,1);
 ndim             = size(neg_samples,2);
 
@@ -235,3 +242,6 @@ for i = 1:1:size(SVMModel.Beta,1)
 end
 fprintf(fid,'%.10d ]',SVMModel.Bias);
 fclose(fid);
+
+
+quit force
