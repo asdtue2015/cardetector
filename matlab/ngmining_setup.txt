@@ -1,0 +1,3 @@
+root_dir: /home/zhengyu/Documents/MATLAB/Cardetector_ZLi/
+detector: car_back
+mining_method: overlap
