@@ -9,11 +9,11 @@
 #include <stdexcept>
 #include "opencv2/gpu/gpu.hpp"
 #include "opencv2/highgui/highgui.hpp"
-
+#include <algorithm>
 #include <sys/types.h> // for "stat" function
 #include <sys/stat.h>
 #include <unistd.h>
-
+#include <functional>
 #include <sys/types.h> // for "opendir" function
 #include <dirent.h>
 
@@ -156,6 +156,23 @@ name = "N"+name;
 
 return;
 }
+
+
+/*int division(int sum,int size)
+{
+    return sum/size;
+}*/
+
+
+
+
+/*int getposition(const char *array, size_t size, int c)
+ {
+      const char* end = array + size;
+      const char* match = std::find(array, end, c);
+      return (end == match)? -1 : (match-array);
+ }
+   */
 
 
 String detector_out(Rect* r){
@@ -463,6 +480,8 @@ void App::run()
 
         Mat img_aux, img, img_to_show;
         gpu::GpuMat gpu_img;
+
+
         // Iterate over all frames
         while (running && !frame.empty())// as long as running is set to be true and we still have frames to run then
         {
@@ -502,18 +521,140 @@ void App::run()
             // Draw positive classified windows  here we draw the green rectangular boxes of the found objects
 
 
-            write_txt = "";
-            for (size_t i = 0; i < found.size(); i++)
-            {
 
+         int clusterCount = 20;
+     // Mat labels;
+     int attempts = 1000;
+     Mat centers;
+      
+            write_txt = "";
+            Mat samples(found.size(), 2, CV_32F); //XXX float? 
+            Mat area(found.size(), 1, CV_32F); //XXX float? 
+            Mat mnarea(clusterCount, 1, CV_32F); 
+Mat labels(found.size(), 1, CV_32F);
+cout << "samples = "<< endl << " "  << found.size() << endl << endl;
+
+            for (size_t i = 0; i < found.size() ; i++)
+            {
+  
 
                 Rect r = found[i]; // what should be saved as suggest in a .yml file by the detector.cpp file
+                samples.at<float>(i, 0) = r.x + 0.5 * r.width; // returns Xc od the detected rectangle
+                samples.at<float>(i, 1) = r.y + 0.5 * r.height; // // returns Yc od the detected rectangle
+                
+               area.at<float> (0,i) = r.height*r.width;
 
                 write_txt +=detector_out(&r);
 
                 rectangle(img_to_show, r.tl(), r.br(), CV_RGB(0, 255, 0), 3);
+   
+     }
+//clusterCount = found.size();
+              kmeans(samples, clusterCount, labels, TermCriteria(CV_TERMCRIT_ITER|CV_TERMCRIT_EPS, 10000, 0.0001), attempts, KMEANS_PP_CENTERS, centers );
+cout << "labels = "<< endl << " "  << labels << endl << endl;
+cout << "centers = "<< endl << " "  << centers << endl << endl;
+cout << "first = "<< endl << " "  << (int)centers.at<float>(1,1) << endl << endl;
+//cout << "first = "<< endl <<" " << found.size() << endl;
+cout << "area = "<< endl << " "  << area << endl << endl;
+
+/*int division(int,int);
+int sum=0;
+int j = 0;
+int size = (int)found.size();
+
+
+for (int k = 0; k < clusterCount;){
+            for (int i = 0; i <(int) found.size(); i++)
+
+            
+
+if (labels (i) = k) {
+
+j=j+1;
+
+sum = sum + area.at<float> (0,i);
+mnarea.at<float> (0,i) = sum;
+}
+k++;
+     cout<<"Average of array elements is "<<division(sum,size);
+}
+
+// cout << "mnarea = "<< endl << " "  << division(sum,j) << endl << endl;
+
+*/
+
+
+
+/*for (int k = 1; k < clusterCount; k++)
+{
+
+int number = getposition (labels , sizeof(labels), k);
+
+cout << number << "number" << endl;
+
+}
+*/
+
+
+
+for (int k = 0; k < clusterCount ; k++){        // for every cluster
+
+
+int sum = 0;       // sum for this cluster
+int j=0;           // detection in this cluster
+double mean_area = 0;
+
+
+  for (size_t i = 0; i <found.size(); i++)  // for every detection
+  {
+
+       if (labels.at<int> (0,i) == k)     // check that detection's label
+       {
+            j=j+1;
+            
+            // cout << "I am here A" << endl;
+            sum = sum + area.at<float> (0,i);
+           //  cout << "I am here B" << endl;
+
+           // cout << "I am here C" << endl;
+
+       }                                                                               
+  
+   }
+   if(j>0)
+   {
+        mean_area = sum / j;
+    }
+
+  // cout << "mean_area = "<< k <<  " "  << mean_area << endl << endl;
+
+    mnarea.at<float> (0,k) = mean_area;
+}
+
+cout << "mean_area = "<< endl << " "  << mnarea << endl << endl;
+
+
+
+ 
+            for (int i = 0; i < clusterCount; i++)
+            {
+//cout << "content = "<< endl << " " << (int)labels.at<double>(i,1) << endl << endl ;
+float h;
+float w;
+ h=sqrt((mnarea.at<float> (0,i))*((float)height/(float)width));
+ w= (mnarea.at<float> (0,i))/h;
+
+                //cv::rectangle( image, cvPoint(x-w/2,y-h/2),cvPoint(x+w/2,y+h/2/2),CV_RGB(r,g,b), 1, 8)
+  //ectangle(img_to_show,Point((int)centers.at<float>(i,0)-w/2,(int)centers.at<float>(i,1)-h/2),Point((int)centers.at<float>(i,0)+w/2,(int)centers.at<float>(i,1)+h/2), CV_RGB( 0, 0, 255 ),4);
+// circle( img_to_show, Point((int)centers.at<float>(i,0),(int)centers.at<float>(i,1)), 40.0, Scalar( 0, 0, 255 ), 4, 8 );
+rectangle(img_to_show,Point((int)centers.at<float>(i,0)-w/2,(int)centers.at<float>(i,1)-h/2),Point((int)centers.at<float>(i,0)+w/2,(int)centers.at<float>(i,1)+h/2), CV_RGB( 0, 0, 255 ),3);
+;
 
             }
+
+
+
+
 
 			if(args.file_gen)
 			{
@@ -524,6 +665,14 @@ void App::run()
 
 				break; // don't display anything (much faster!)
 			}
+
+/////////////////////////////////////////////////////////////////////////////////////
+
+
+
+/////////////////////////////////////////////////////////////////////////////////////////            
+
+
 
             if (use_gpu) // here the text is added (fps) to the display both in case of cpu or gpu
                 putText(img_to_show, "Mode: GPU", Point(5, 25), FONT_HERSHEY_SIMPLEX, 1., Scalar(255, 100, 0), 2);
