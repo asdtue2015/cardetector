@@ -365,9 +365,13 @@ void App::before_run() {
     // original code
 //     gpu_hog.setSVMDetector(detector);
 //     cpu_hog.setSVMDetector(detector);
-
-    classifier_list.push_back("../../data/carDetector56x48_front_ov_100h.yml");
-    classifier_list.push_back("../../data/peopleDetector64x128.yml");
+    ifstream file_classifiers_in("classifiers.txt");
+    string classifier_line;
+    while(getline(file_classifiers_in, classifier_line)){
+        classifier_list.push_back(classifier_line);
+    }
+    //classifier_list.push_back("../../data/carDetector56x48_front_ov_100h.yml");
+    //classifier_list.push_back("../../data/peopleDetector64x128.yml");
 
     //classifier_list.push_back("../../data/carDetector56x48_front_ov_500.yml");
     //classifier_list.push_back("../../data/Detector_car_all_v2.yml");
