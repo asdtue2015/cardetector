@@ -48,7 +48,7 @@ groupn=ceil(total/npg);                    %calculate group number (with 20 imag
 switch SETUP{4,1}
 
     case {'car_back','car_front','car_all'}
-        
+
         for grp=1:1:(groupn+1)
 
             count = 0;
@@ -132,9 +132,9 @@ switch SETUP{4,1}
                                 case 'overlap'
                                    test(b) = rectangle_collision(x1,y1,x2,y2,x,y,w,h); % check for overlaps between NotCar and Dontcare, add the result to a cell to test
 
-                                 case 'area'                               
-                                    test(b) = collision_area_based(x1,y1,x2,y2,x,y,w,h);                  
-                            end           
+                                 case 'area'
+                                    test(b) = collision_area_based(x1,y1,x2,y2,x,y,w,h);
+                            end
                         end
 
                         if (dct>1)                                            % if there is a DontCare label
@@ -150,10 +150,10 @@ switch SETUP{4,1}
                                      case 'overlap'
                                         dctest(b) = rectangle_collision(x1,y1,x2,y2,x,y,w,h); % check for overlaps between NotCar and Dontcare, add the result to a cell to test
 
-                                     case 'area'                               
+                                     case 'area'
                                          dctest(b) = collision_area_based(x1,y1,x2,y2,x,y,w,h);
 
-                                 end                   
+                                 end
                              end
 
                             collision = (any(test == 1)||any(dctest==1));             %check if there is collision between NotCar and Car and DontCare
@@ -190,10 +190,10 @@ switch SETUP{4,1}
             bigmat=[bigmat;ngbigmat];
             fclose('all');
         end
-    
-%% main loop for pedestrain ng mining    
+
+%% main loop for pedestrain ng mining
 case 'pedestrian'
-        
+
         for grp=1:1:(groupn+1)
 
             count = 0;
@@ -209,7 +209,7 @@ case 'pedestrian'
                 %% get all car rectrangles
                 t      = 1;
                 ped_pt = [];                                                 % an object to store all cars in one image
-               
+
                 for a = 1:total_obj
 
                     % get the object label type
@@ -220,7 +220,7 @@ case 'pedestrian'
                         %% save the roi of cars
                         ped_pt.(['c',num2str(t)]) = [objects(a).x1,objects(a).y1,objects(a).x2-objects(a).x1+1,objects(a).y2-objects(a).y1+1]; % get x1, y1, width, height
                         t = t + 1;
-                    end                 
+                    end
 
                 end
 
@@ -249,7 +249,7 @@ case 'pedestrian'
                 end
 
             %%  Generate negetive mining examples
-            
+
             if(~(isempty(ngped_pt)))
                     ngstructSize = length(fieldnames(ngped_pt));       % get total No. of NotCar in a label
                     for j=1:ngstructSize                               % iterate through every NotCar label
@@ -270,9 +270,9 @@ case 'pedestrian'
                                     case 'overlap'
                                        test(b) = rectangle_collision(x1,y1,x2,y2,x,y,w,h); % check for overlaps between NotCar and Dontcare, add the result to a cell to test
 
-                                     case 'area'                               
-                                        test(b) = collision_area_based(x1,y1,x2,y2,x,y,w,h);                  
-                                end           
+                                     case 'area'
+                                        test(b) = collision_area_based(x1,y1,x2,y2,x,y,w,h);
+                                end
                             end
 
 
@@ -309,21 +309,21 @@ case 'pedestrian'
                       end
                     end
             end
-            
+
           end
             %%
             bigmat=[bigmat;ngbigmat];
             fclose('all');
      end
 
- 
-    
-    
-    
-end    
-  
-    
-    
+
+
+
+
+end
+
+
+
 %%
 exbigmat=[exbigmat;bigmat];                % Combine NG matrix with original matrix
 
@@ -349,9 +349,9 @@ switch SETUP{4,1}
         window           = [56 48];
     case 'pedestrian'
         window           = [64 128];
-end        
-        
-        
+end
+
+
 npos             = size(pos_samples,1);
 nneg             = size(neg_samples,1);
 ndim             = size(neg_samples,2);
@@ -378,4 +378,4 @@ fprintf(fid,'%.10d ]',SVMModel.Bias);
 fclose(fid);
 
 toc
-%quit force
+quit force
