@@ -179,11 +179,7 @@ String detector_out(Rect* r) {
     int y1;
     int y2;
     string txt_out_string;
-    /*cout<<" r "<<*r<<endl;
-     cout<<" x "<<r->x<<endl;
-     cout<<" y "<<r->y<<endl;
-     cout<<" w "<<r->width<<endl;
-     cout<<" h "<<r->height<<endl;*/
+
     x1 = r->x;
     y1 = r->y;
     x2 = (x1 + r->width);
@@ -369,31 +365,26 @@ void App::before_run() {
 //     cpu_hog.setSVMDetector(detector);
     ifstream file_classifiers_in("classifiers.txt");
     string classifier_line;
-    /*size_t r_place;
-    size_t g_place;
-    size_t b_place;*/
     string colors;
     string green_blue;
     string blue;
     String red;
     string green;
-    while(getline(file_classifiers_in, classifier_line)){
-        colors=classifier_line.substr(classifier_line.find(";")+1);
-        red=colors.substr(0,colors.find(";"));
-        green_blue=colors.substr(colors.find(";")+1);
-        green=green_blue.substr(0,green_blue.find(";"));
-        blue= green_blue.substr(green_blue.find(";")+1);
-        classifier_line=classifier_line.substr(0,classifier_line.find(";"));
-        cout<<"red  "<<red<<endl;
-        cout<<"green  "<<green<<endl;
-        cout<<"blue  "<<blue<<endl;
+    while (getline(file_classifiers_in, classifier_line)) {
+        classifier_line = classifier_line.substr(0, classifier_line.find("#"));
+        colors = classifier_line.substr(classifier_line.find(";") + 1);
+        red = colors.substr(0, colors.find(";"));
+        green_blue = colors.substr(colors.find(";") + 1);
+        green = green_blue.substr(0, green_blue.find(";"));
+        blue = green_blue.substr(green_blue.find(";") + 1);
+        classifier_line = classifier_line.substr(0, classifier_line.find(";"));
+
         classifiers_red_vlaues.push_back(stoi(red));
         classifiers_green_vlaues.push_back(stoi(green));
         classifiers_blue_vlaues.push_back(stoi(blue));
 
         classifier_list.push_back(classifier_line);
     }
-    //classifier_list.push_back("../../data/carDetector56x48_front_ov_100h.yml");
     //classifier_list.push_back("../../data/peopleDetector64x128.yml");
 
     //classifier_list.push_back("../../data/carDetector56x48_front_ov_500.yml");
@@ -576,35 +567,45 @@ void App::run() {
             Rect r = found[i]; // what should be saved as suggest in a .yml file by the detector.cpp file
 
             write_txt += detector_out(&r);
-            /*if (classifier_index % 3 == 1) {
-                rectangle(img_to_show_final, r.tl(), r.br(), CV_RGB(0, 255, 0),
-                        3);
-            } else if (classifier_index % 3 == 2) {
-                rectangle(img_to_show_final, r.tl(), r.br(), CV_RGB(255, 0, 0),
-                        3);
-            } else{
-                rectangle(img_to_show_final, r.tl(), r.br(), CV_RGB(0, 0, 255),
-                        3);
-            }*/
-            rectangle(img_to_show_final, r.tl(), r.br(), CV_RGB(classifiers_red_vlaues.at(classifier_index-1),
-             classifiers_green_vlaues.at(classifier_index-1), classifiers_blue_vlaues.at(classifier_index-1)),
-                        3);
+            rectangle(img_to_show_final, r.tl(), r.br(),
+                    CV_RGB(classifiers_red_vlaues.at(classifier_index - 1),
+                            classifiers_green_vlaues.at(classifier_index - 1),
+                            classifiers_blue_vlaues.at(classifier_index - 1)),
+                    3);
         }
-        if(use_gpu){
+        if (use_gpu) {
             //stringstream desc_size_gpu;
             //to_string(static_cast<int>(gpu_hog.getDescriptorSize())) >> desc_size_gpu;
-            putText(img_to_show_final, "Descriptor size:"+to_string(static_cast<int>(gpu_hog.getDescriptorSize()))+" FPS HOG detector "+to_string(classifier_index)+":" + hogWorkFps(),
-                Point(5, 105 + classifier_index * 40), FONT_HERSHEY_SIMPLEX, 1.,
-                Scalar(255, 100, 0), 2);   
-        }else{
+            putText(img_to_show_final,
+                    "Descriptor size:"
+                            + to_string(
+                                    static_cast<int>(gpu_hog.getDescriptorSize()))
+                            + " FPS HOG detector " + to_string(classifier_index)
+                            + ":" + hogWorkFps(),
+                    Point(5, 105 + classifier_index * 40), FONT_HERSHEY_SIMPLEX,
+                    1.,
+                    CV_RGB(classifiers_red_vlaues.at(classifier_index - 1),
+                            classifiers_green_vlaues.at(classifier_index - 1),
+                            classifiers_blue_vlaues.at(classifier_index - 1)),
+                    2);
+        } else {
             //stringstream desc_size_cpu;
             //cpu_hog.getDescriptorSize() >> desc_size_cpu;
-            putText(img_to_show_final, "Descriptor size:"+to_string(static_cast<int>(cpu_hog.getDescriptorSize()))+" FPS HOG detector "+to_string(classifier_index)+":" + hogWorkFps(),
-                Point(5, 105 + classifier_index * 40), FONT_HERSHEY_SIMPLEX, 1.,
-                Scalar(255, 100, 0), 2);
+            putText(img_to_show_final,
+                    "Descriptor size:"
+                            + to_string(
+                                    static_cast<int>(cpu_hog.getDescriptorSize()))
+                            + " FPS HOG detector " + to_string(classifier_index)
+                            + ":" + hogWorkFps(),
+                    Point(5, 105 + classifier_index * 40), FONT_HERSHEY_SIMPLEX,
+                    1.,
+                    CV_RGB(classifiers_red_vlaues.at(classifier_index - 1),
+                            classifiers_green_vlaues.at(classifier_index - 1),
+                            classifiers_blue_vlaues.at(classifier_index - 1)),
+                    2);
+
         }
-            
-        
+
         img_to_show_final.copyTo(img_out);
 
         if (args.file_gen) {
@@ -633,7 +634,7 @@ void App::run() {
             if (args.src_is_video || args.src_is_camera)
                 vc >> frame; // whether the source is video or from camera put update the frame to the capured value
             workEnd(); // end the timer of the whole work
-            
+
             if (args.write_video) {
                 if (!video_writer.isOpened()) {
                     video_writer.open(args.dst_video,
