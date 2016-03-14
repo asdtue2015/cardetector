@@ -120,7 +120,9 @@ private:
     gpu::GpuMat gpu_img;
     Mat img_to_show_final;
     Mat img_out;
-
+    vector<int> classifiers_red_vlaues;
+    vector<int> classifiers_green_vlaues;
+    vector<int> classifiers_blue_vlaues;
 };
 
 static void printHelp() {
@@ -367,7 +369,28 @@ void App::before_run() {
 //     cpu_hog.setSVMDetector(detector);
     ifstream file_classifiers_in("classifiers.txt");
     string classifier_line;
+    /*size_t r_place;
+    size_t g_place;
+    size_t b_place;*/
+    string colors;
+    string green_blue;
+    string blue;
+    String red;
+    string green;
     while(getline(file_classifiers_in, classifier_line)){
+        colors=classifier_line.substr(classifier_line.find(";")+1);
+        red=colors.substr(0,colors.find(";"));
+        green_blue=colors.substr(colors.find(";")+1);
+        green=green_blue.substr(0,green_blue.find(";"));
+        blue= green_blue.substr(green_blue.find(";")+1);
+        classifier_line=classifier_line.substr(0,classifier_line.find(";"));
+        cout<<"red  "<<red<<endl;
+        cout<<"green  "<<green<<endl;
+        cout<<"blue  "<<blue<<endl;
+        classifiers_red_vlaues.push_back(stoi(red));
+        classifiers_green_vlaues.push_back(stoi(green));
+        classifiers_blue_vlaues.push_back(stoi(blue));
+
         classifier_list.push_back(classifier_line);
     }
     //classifier_list.push_back("../../data/carDetector56x48_front_ov_100h.yml");
@@ -553,17 +576,19 @@ void App::run() {
             Rect r = found[i]; // what should be saved as suggest in a .yml file by the detector.cpp file
 
             write_txt += detector_out(&r);
-            if (classifier_index % 3 == 1) {
+            /*if (classifier_index % 3 == 1) {
                 rectangle(img_to_show_final, r.tl(), r.br(), CV_RGB(0, 255, 0),
                         3);
             } else if (classifier_index % 3 == 2) {
                 rectangle(img_to_show_final, r.tl(), r.br(), CV_RGB(255, 0, 0),
                         3);
-            } else/* if(classifier_index%3 == 0)*/{
+            } else{
                 rectangle(img_to_show_final, r.tl(), r.br(), CV_RGB(0, 0, 255),
                         3);
-            }
-
+            }*/
+            rectangle(img_to_show_final, r.tl(), r.br(), CV_RGB(classifiers_red_vlaues.at(classifier_index-1),
+             classifiers_green_vlaues.at(classifier_index-1), classifiers_blue_vlaues.at(classifier_index-1)),
+                        3);
         }
         if(use_gpu){
             //stringstream desc_size_gpu;

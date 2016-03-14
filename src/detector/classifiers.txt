@@ -1,2 +1,2 @@
-../../data/carDetector56x48_front_ov_100h.yml
-../../data/peopleDetector64x128.yml
+../../data/peopleDetector64x128.yml;255;0;0
+../../data/carDetector56x48_front_ov_100h.yml;0;50;255
