@@ -115,8 +115,7 @@ private:
     Mat frame;
 
     string write_txt;
-    vector<Rect> all_found;
-    Mat img_aux, img, img_to_show;
+    Mat img_aux, img;
     gpu::GpuMat gpu_img;
     Mat img_to_show_final;
     Mat img_out;
@@ -356,22 +355,23 @@ App::App(const Args& s) {
 }
 
 void App::before_run() {
+    /*This function is responsible for initialization before the actual run and looping*/
 // Shah modification replaces below to load detecor in yml file
     // replace commented code below
     //FileStorage fs("../../data/carDetector56x48_front_ov_100h.yml", FileStorage::READ);
-
     // original code
 //     gpu_hog.setSVMDetector(detector);
 //     cpu_hog.setSVMDetector(detector);
-    ifstream file_classifiers_in("classifiers.txt");
-    string classifier_line;
-    string colors;
-    string green_blue;
-    string blue;
-    String red;
-    string green;
+    ifstream file_classifiers_in("classifiers.txt"); // the text file containing the classifiers that will be used along the desired color
+    string classifier_line;    // the line read from the classifiers text file
+    string colors;    // the string containging the colors values
+    string green_blue; //The substring which will contain the color values for green and blue
+    string blue; // The string containing the blue color value for the corresponding detector box (0->255)
+    String red; // The string containing the red color value for the corresponding detector box (0->255)
+    string green; // The string containing the green color value for the corresponding detector box (0->255)
     while (getline(file_classifiers_in, classifier_line)) {
-        classifier_line = classifier_line.substr(0, classifier_line.find("#"));
+        //loop to get all classifiers
+        classifier_line = classifier_line.substr(0, classifier_line.find("#")); // anything written after symbol # will be treated as a comment
         colors = classifier_line.substr(classifier_line.find(";") + 1);
         red = colors.substr(0, colors.find(";"));
         green_blue = colors.substr(colors.find(";") + 1);
@@ -383,13 +383,13 @@ void App::before_run() {
         classifiers_green_vlaues.push_back(stoi(green));
         classifiers_blue_vlaues.push_back(stoi(blue));
 
-        classifier_list.push_back(classifier_line);
+        classifier_list.push_back(classifier_line); //update the classifier vector list with each classifier written in the classifier text file
     }
     //classifier_list.push_back("../../data/peopleDetector64x128.yml");
 
     //classifier_list.push_back("../../data/carDetector56x48_front_ov_500.yml");
     //classifier_list.push_back("../../data/Detector_car_all_v2.yml");
-    cout << " lis size : " << classifier_list.size() << endl;
+    //cout << " lis size : " << classifier_list.size() << endl;
     // find out if the input is a directory
     struct stat path_stat;
     running = true;
@@ -439,7 +439,7 @@ void App::run() {
                 vc >> frame;
             } else // in case the input is just an image
             {
-                if (args.src_is_directory == true) {
+                if (args.src_is_directory == true) { // if the input is a directory then the code will loop across all the .png and .jpg images in the directory
                     // prepare next image of directory
                     running = false; // by default, we assume there will be no more image available
 
@@ -459,7 +459,7 @@ void App::run() {
                     }
                 }
 
-                frame = imread(args.src);
+                frame = imread(args.src); // update frame to the input image 
                 if (frame.empty())
                     throw runtime_error(
                             string("can't open image file: " + args.src));
@@ -471,14 +471,11 @@ void App::run() {
                 throw runtime_error(
                         string("can't open image file: " + args.src));
         }
-        if (img_to_show_final.empty()) {
-
-        }
-        if (classifier_index < classifier_list.size()) {
+        if (classifier_index < classifier_list.size()) { // as long as we have classifiers in the list
 
             fs = FileStorage(classifier_list.at(classifier_index),
                     FileStorage::READ);
-
+            // read from the classifier
             fs["width"] >> width_run;
             fs["height"] >> height_run;
             fs["detector"] >> detector;
@@ -486,7 +483,7 @@ void App::run() {
             // loads the detector information from the .yml file (note the .yml file contains
             // also the .yml file contain the values for the width and the height and they are read into variables but into the conflicting copy)
             fs.release();
-            classifier_index++;
+            classifier_index++; // update the classifier index to go to the next classifier
             // automatically set size from yaml file
             //Size win_size(width_run,height_run); //(64, 128) or (48, 96) or 56,48
             //Size win_stride(args.win_stride_width, args.win_stride_height);
@@ -539,7 +536,6 @@ void App::run() {
 
         gpu_hog.nlevels = nlevels;
         cpu_hog.nlevels = nlevels;
-        vector<Rect> all_found;
         vector<Rect> found;
         // Perform HOG classification
         hogWorkBegin();            // start the timer of the hog classification
@@ -571,11 +567,13 @@ void App::run() {
                     CV_RGB(classifiers_red_vlaues.at(classifier_index - 1),
                             classifiers_green_vlaues.at(classifier_index - 1),
                             classifiers_blue_vlaues.at(classifier_index - 1)),
-                    3);
+                    3); //draw the detection rectangle based on the color specified to this classifier in the txt file
         }
+        //ADD the text to the image containing each classifierś fps and descriptor size (dimension)
         if (use_gpu) {
             //stringstream desc_size_gpu;
             //to_string(static_cast<int>(gpu_hog.getDescriptorSize())) >> desc_size_gpu;
+            //
             putText(img_to_show_final,
                     "Descriptor size:"
                             + to_string(
@@ -606,7 +604,7 @@ void App::run() {
 
         }
 
-        img_to_show_final.copyTo(img_out);
+        img_to_show_final.copyTo(img_out); // update img_out to be displayed with all the information per classifier written on it
 
         if (args.file_gen) {
             write_file(args.src, write_txt);
@@ -651,7 +649,7 @@ void App::run() {
 
                 video_writer << img;
             }
-            classifier_index = 0;
+            classifier_index = 0; // classifier index is back to zero to go through the classifiers agian
         }
 
         // produce an output video from the results
