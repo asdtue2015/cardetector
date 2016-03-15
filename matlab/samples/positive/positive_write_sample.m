@@ -2,13 +2,13 @@
 clear all; close all; clc;
 
 %% cd to correct dir
-ROOT_DIR = 'C:\Users\zli1\Desktop\Car detect\';
+ROOT_DIR = '/home/gijs/projects/vslam/Programming/c/';
 % ROOT_DIR = '/home/shah/Projects/'
-cd([ROOT_DIR,'matlab/samples/positive']);
+cd([ROOT_DIR,'TUE_Multiclass_Detector/matlab/samples/positive']);
 addpath '../../tools'
 
 %% options
-data_dir = [ROOT_DIR,'/data'];
+data_dir = [ROOT_DIR,'/TUE_Multiclass_Detector/data'];
 data_set = '';
 
 %% get label directory
@@ -29,7 +29,7 @@ img_idx = 0;
 count   = 1;
 bigmat  = [];
 for lab_idx = 1:1:min([nlabels nimages])-1
-    
+
     %% parse the label files
     objects = readLabels(label_dir,lab_idx);
     
@@ -44,8 +44,8 @@ for lab_idx = 1:1:min([nlabels nimages])-1
         ybegin  = objects(a).y1;
         width   = objects(a).x2-objects(a).x1;
         height  = objects(a).y2-objects(a).y1;
-        %ratio   = width/height;
-       % angle   = objects(a).alpha;
+        ratio   = width/height;
+        angle   = objects(a).alpha;
         
         %% is this an oject of interest
         state = not(strcmp(objects(a).type,ostring)) | (objects(a).truncation>0.15) | (objects(a).occlusion==2) | (objects(a).occlusion==3) | (height<48) | (objects(a).alpha >= -pi/2+0.25) | (objects(a).alpha <= -pi/2-0.25);
@@ -66,9 +66,9 @@ for lab_idx = 1:1:min([nlabels nimages])-1
             pos = [objects(a).x1, objects(a).y1, objects(a).x2-objects(a).x1+1, objects(a).y2-objects(a).y1+1];  
             
             %% show image and label
-            figure(1)
-            imshow(img);
-            rectangle('Position',pos,'EdgeColor','red')
+%             figure(1)
+%             imshow(img);
+%             rectangle('Position',pos,'EdgeColor','red')
             
             %% get the HOG descriptor                      
             [out,window] = constructHOGFeature( YamlStruct, pos(1), pos(2), pos(3), pos(4), 0 );

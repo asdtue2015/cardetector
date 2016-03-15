@@ -2,9 +2,9 @@
 clear all; close all; clc;
 
 %% cd to correct dir
-ROOT_DIR = 'C:\Users\zli1\Desktop\Car detect\';
+ROOT_DIR = '/home/gijs/projects/vslam/Programming/c/';
 % ROOT_DIR = '/home/shah/Projects/'
-cd( [ROOT_DIR,'/matlab/training'] );
+cd( [ROOT_DIR,'/TUE_Multiclass_Detector/matlab/training'] );
 
 %% load the feature files
 pos_samples_file = matfile('../../data/positive_features.mat');

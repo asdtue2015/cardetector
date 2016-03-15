@@ -1,18 +1,18 @@
 %% clear and close everything
 clear all; close all; clc;
-tic
+
 %% cd to correct dir
-ROOT_DIR = '/home/hazem/Desktop/cardetectz/';
+ROOT_DIR = '/home/gijs/projects/vslam/Programming/c/';
 % ROOT_DIR = '/home/shah/Projects/'
-cd([ROOT_DIR,'matlab/ngmining']);
+cd([ROOT_DIR,'TUE_Multiclass_Detector/matlab/ngmining']);
 addpath '../tools'
 addpath '../samples/negative/'
 %% options
-data_dir = [ROOT_DIR,'/data'];
+data_dir = [ROOT_DIR,'/TUE_Multiclass_Detector/data'];
 data_set = '';
 %% get label directory
 cam = 2; % 2 = left color camera
-nclabel_dir = fullfile(data_dir,[data_set '/nclabelfront_' num2str(cam)]);  % read Notcar labels
+nclabel_dir = fullfile(data_dir,[data_set '/nclabel_' num2str(cam)]);  % read Notcar labels
 nnclabels   = length(dir(fullfile(nclabel_dir, '*.txt')));
 
 label_dir = fullfile(data_dir,[data_set '/label_' num2str(cam)]);      % read positive labels
@@ -29,13 +29,12 @@ count = 0;
 bigmat  = importdata('../../data/negative_features.mat');
 ncbigmat = [] ;
 %%
-%for lab_idx = 0:1:min([nnclabels nimages])-1   
-    lab_idx = 10;
+for lab_idx = 0:1:min([nnclabels nimages])-1   
+   
     %% parse the label files
     objects   = readLabels(label_dir,lab_idx);                   %read car labels
     total_obj = length(objects);                                 % No. of all the cars
-    disp('Processing Image NO. :')
-    lab_idx
+    
     %% get all car rectrangles
     t      = 1;
     car_pt = [];                                                 % an object to store all cars in one image 
@@ -131,14 +130,7 @@ ncbigmat = [] ;
                 figure(1)
                 rectangle('Position',cpos,'EdgeColor','blue')
                 
-                
-                %test(b) = rectangle_collision(x1,y1,x2,y2,x,y,w,h); % check for overlaps between NotCar and Car, add the result to a cell to test
-               test(b) = collision_area_based(x1,y1,x2,y2,x,y,w,h);
-                
-%                 if(test(b))                     
-%                     figure(1)
-%                     rectangle('Position',[x y w h],'EdgeColor','cyan')
-%                 end
+                test(b) = rectangle_collision(x1,y1,x2,y2,x,y,w,h); % check for overlaps between NotCar and Car, add the result to a cell to test 
             end
             
             if (dct>1)                                            % if there is a DontCare label
@@ -154,17 +146,7 @@ ncbigmat = [] ;
                      figure(1)
                      rectangle('Position',dcpos,'EdgeColor','magenta')
                 
-                     
-                      %dctest(b) = rectangle_collision(x1,y1,x2,y2,x,y,w,h); % check for overlaps between NotCar and Dontcare, add the result to a cell to test 
-                   dctest(b) = collision_area_based(x1,y1,x2,y2,x,y,w,h);
-                    
-%                     if(dctest(b))
-%                        
-%                         figure(1)
-%                         rectangle('Position',[x y w h],'EdgeColor','cyan')
-%                     end
-                    
-                    
+                     dctest(b) = rectangle_collision(x1,y1,x2,y2,x,y,w,h); % check for overlaps between NotCar and Dontcare, add the result to a cell to test 
                  end
      
                 collision = (any(test == 1)||any(dctest==1));             %check if there is collision between NotCar and Car and DontCare
@@ -230,10 +212,8 @@ ncbigmat = [] ;
     end 
 
 
-%end
+end
 %%
 bigmat=[bigmat;ncbigmat];
-toc
 %% save for training
-%save('../../../data/negative_features.mat', 'bigmat');
-%save('../../data/notcar_features.mat', 'ncbigmat');
+save('../../data/negative_features.mat', 'bigmat');

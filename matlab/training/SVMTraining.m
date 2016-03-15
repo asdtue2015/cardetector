@@ -2,13 +2,13 @@
 clear all; close all; clc;
 
 %% cd to correct dir
-ROOT_DIR = 'C:\Users\zli1\Desktop\Car detect\';
+ROOT_DIR = '/home/gijs/projects/vslam/Programming/c/';
 % ROOT_DIR = '/home/shah/Projects/'
-cd( [ROOT_DIR,'/matlab/training'] );
+cd( [ROOT_DIR,'/TUE_Multiclass_Detector/matlab/training'] );
 
 %% load the feature files
 window           = [56 48];
-pos_samples_file = matfile('../../data/positive_features_front.mat');
+pos_samples_file = matfile('../../data/positive_features.mat');
 pos_samples      = pos_samples_file.bigmat; 
 npos             = size(pos_samples,1)
 neg_samples_file = matfile('../../data/negative_features.mat'); 
@@ -23,7 +23,7 @@ labels = [ones(size(pos_samples,1),1); -1*ones(size(neg_samples,1),1)];
 SVMModel = fitcsvm( [pos_samples;neg_samples], labels );
 
 %% write yml the classifiers file
-fid = fopen('../../data/carDetector56x48_front.yml','w');
+fid = fopen('../../data/carDetector56x48.yml','w');
 fprintf(fid,'%%YAML:1.0\n');  
 fprintf(fid,'width: %i\n',window(1));
 fprintf(fid,'height: %i\n',window(2));

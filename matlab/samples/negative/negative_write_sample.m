@@ -2,32 +2,30 @@
 clear all; close all; clc;
 
 %% cd to correct dir
-ROOT_DIR = 'C:\Users\zli1\Desktop\Car detect\';
+ROOT_DIR = '/home/gijs/projects/vslam/Programming/c/';
 % ROOT_DIR = '/home/shah/Projects/'
-cd([ROOT_DIR,'matlab/samples/negative']);
+cd([ROOT_DIR,'TUE_Multiclass_Detector/matlab/samples/nagative']);
 addpath '../../tools'
 
 %% options
-data_dir = ['F:\Car detect\data'];
+data_dir = [ROOT_DIR,'/TUE_Multiclass_Detector/data'];
 data_set = '';
 
 %% get label directory
 cam = 2; % 2 = left color camera
-label_dir = fullfile(data_dir,[data_set '/label_' num2str(cam)]);
+label_dir = fullfile(root_dir,[data_set '/label_' num2str(cam)]);
 nlabels   = length(dir(fullfile(label_dir, '*.txt')));
 
 %% image input
-image_dir = fullfile(data_dir,[data_set '/image_' num2str(cam)]);
+image_dir = fullfile(root_dir,[data_set '/image_' num2str(cam)]);
 nimages   = length(dir(fullfile(image_dir, '*.png')));
 
 %% HOG block input
-hog_dir = fullfile(data_dir,[data_set '/hog_' num2str(cam)]);
+hog_dir = fullfile(root_dir,[data_set '/hog_' num2str(cam)]);
 nymls   = length(dir(fullfile(hog_dir, '*.yml')));
-
 
 %% main loop
 count = 0;
-bigmat  = [];
 for lab_idx = 0:1:min([nlabels nimages])-1
     
     
@@ -56,8 +54,8 @@ for lab_idx = 0:1:min([nlabels nimages])-1
     %% read the image
     img        = imread(sprintf('%s/%06d.png',image_dir,lab_idx));
     YamlStruct = parseHOGFile( sprintf('%s/%06d.yml', hog_dir, lab_idx) );
-     figure(1)
-     imshow(img)
+%     figure(1)
+%     imshow(img)
         
     %% generate X negatives per image
     for j = 1:10
@@ -90,10 +88,10 @@ for lab_idx = 0:1:min([nlabels nimages])-1
         
         %% write the roi of the object to an image
         sprintf('%06d_neg_%1d.png', lab_idx, j )
-         img_rsz  = imresize( img, 1/window(5) );
-         img_crop = imcrop( img, [window(1,1) window(1,2) window(1,3)-1 window(1,4)-1] );
-         figure(2)
-         imshow(img_crop)
+%         img_rsz  = imresize( img, 1/window(5) );
+%         img_crop = imcrop( img, [window(1,1) window(1,2) window(1,3)-1 window(1,4)-1] );
+%         figure(2)
+%         imshow(img_crop)
 %         imwrite( img_crop, sprintf('%06d_neg_%1d.png', lab_idx, j ) );
         
     end
