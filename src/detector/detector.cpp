@@ -445,7 +445,7 @@ void App::run() {
         Mat img_aux, img, img_to_show;
         gpu::GpuMat gpu_img;
 
-        // check if overlap between cluster allow to reduce their number further
+
 
         // Iterate over all frames
         while (running && !frame.empty()) // as long as running is set to be true and we still have frames to run then
@@ -518,8 +518,10 @@ void App::run() {
 
                 write_txt += detector_out(&r);
 
+        if (gr_threshold >= 0) //draw the detections without external clustering
+                {
                 rectangle(img_to_show, r.tl(), r.br(), CV_RGB(0, 255, 0), 3);
-
+                }
             }
 
             for (int j = 0; j < (int) found.size(); j++)  // for every detection
@@ -590,7 +592,8 @@ void App::run() {
                             (mnarea.at<float>(0, k))
                                     * ((float) height / (float) width));
                     w = (mnarea.at<float>(0, k)) / h; // calculate the width of each calculated cluster
-
+                    if(gr_threshold < 0) // special gr_threshold = -1 for clustering 
+                    {
                     rectangle(
                             img_to_show,               // draw the clusters
                             Point(centers.at<float>(k, 0) - w / 2,
@@ -600,6 +603,7 @@ void App::run() {
                             CV_RGB(255, 0, 0), 3);
                 }
             }
+     }
 
             if (args.file_gen) {
                 write_file(args.src, write_txt);
@@ -700,7 +704,8 @@ void App::handleKey(char key) {
         break;
     case 'e':
     case 'E':
-        gr_threshold = max(0, gr_threshold - 1);
+        // range changed from max(0,gr_threshold - 1) to introduce clustering flag for ::-1
+        gr_threshold = max (-1,gr_threshold - 1);
         cout << "Group threshold: " << gr_threshold << endl;
         // merging similar rects constant (group thershold) decrementation but also making sure that itś minimum value is 0 when e is pressed
         break;
