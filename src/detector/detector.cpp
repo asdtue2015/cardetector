@@ -825,8 +825,7 @@ void App::handleKey(char key) {
 		break;
 	case 'e':
 	case 'E':
-		// range changed from max(0,gr_threshold - 1) to introduce clustering flag for ::-1
-		gr_threshold = max(-1, gr_threshold - 1);
+		gr_threshold = max(0, gr_threshold - 1);
 		cout << "Group threshold: " << gr_threshold << endl;
 		classifier_index = 0;
 		// merging similar rects constant (group thershold) decrementation but also making sure that itś minimum value is 0 when e is pressed
