@@ -29,6 +29,7 @@ public:
 
 	bool src_is_video;
 	bool file_gen;
+	bool headless;
 	bool src_is_camera;
 	bool src_is_directory;
 
@@ -142,7 +143,8 @@ static void printHelp() {
 			<< "  [--write_video <bool>] # write video or not\n"
 			<< "  [--dst_video <path>] # output video path\n"
 			<< "  [--dst_video_fps <double>] # output video fps\n"
-			<< "  [--write_file] # write file in directory fps\n";
+			<< "  [--write_file] # write file in directory fps\n"
+			<< "  [--headless # do not display image fps\n";
 	help_showed = true;
 }
 
@@ -217,6 +219,7 @@ Args::Args() {
 	src_is_directory = false;
 	camera_id = 0;
 	file_gen = false;
+	headless = false;
 	write_video = false;
 	dst_video_fps = 24.;
 
@@ -277,7 +280,8 @@ Args Args::read(int argc, char** argv) {
 			printHelp();
 		else if (string(argv[i]) == "--write_file")
 			args.file_gen = true; //txtGenerator(argc, argv) ;
-
+        else if (string(argv[i]) == "--headless")
+			args.headless = true; //disabling image display ;
 		else if (string(argv[i]) == "--video") {
 			args.src = argv[++i];
 			args.src_is_video = true;
@@ -585,7 +589,7 @@ void App::run() {
 			B.at<float>(i, 1) = samples.at<float>(i, 1) - r.height / 2; //bottom right point of cluster - y
             
 			write_txt += detector_out(&r , classifiers_tag.at(classifier_index - 1));
-			if (gr_threshold >= 0) //draw the detections without external clustering
+			if (gr_threshold >= 0 && args.headless == false) //draw the detections without external clustering
 					{
 				rectangle(img_to_show_final, r.tl(), r.br(),
 						CV_RGB(classifiers_red_vlaues.at(classifier_index - 1),
@@ -703,7 +707,7 @@ void App::run() {
 						(mnarea.at<float>(0, k))
 								* ((float) height_run / (float) width_run));
 				w = (mnarea.at<float>(0, k)) / h; // calculate the width of each calculated cluster
-				if (gr_threshold < 0) // special gr_threshold = -1 for clustering 
+				if (gr_threshold < 0 && args.headless == false) // special gr_threshold = -1 for clustering 
 						{
 					rectangle(
 							img_to_show_final,              // draw the clusters
@@ -731,9 +735,11 @@ void App::run() {
 
 			/*if (!args.src_is_directory && !args.src_is_video
 					&& !args.src_is_camera) // if processing a single file
-				running = false; // then don't loop on the current image
+				    running = false; // then don't loop on the current image
 
-			break; // don't display anything (much faster!)*/
+			   if (args.headless == true && args.file_gen == true ) break; // don't display anything (much faster!)*/
+
+			
 		}
 			if (use_gpu) // here the text is added (fps) to the display both in case of cpu or gpu
 				putText(img_out, "Mode: GPU ", Point(5, 25),
@@ -763,7 +769,7 @@ void App::run() {
 
 
 			//putText(img_out, "FPS (HOG only): " + hogWorkFps(), Point(5, 105), FONT_HERSHEY_SIMPLEX, 1., Scalar(255, 100, 0), 2);
-			if (!img_out.empty()) {
+			if (!img_out.empty() && args.headless == false) {
 				imshow("opencv_gpu_hog", img_out);
 			}
 
@@ -786,12 +792,17 @@ void App::run() {
 					cvtColor(img_out, img, CV_BGRA2BGR);
 
 				video_writer << img;
+
+
 			}
 			classifier_index = 0; // classifier index is back to zero to go through the classifiers agian
+
 		}
 
 		// produce an output video from the results
 		handleKey((char) waitKey(3));
+
+		       
 
 		//if (args.src_is_directory) break; // if processing a folder, get the next image instead of looping
 
