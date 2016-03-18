@@ -1,2 +1,2 @@
-../../data/peopleDetector64x128.yml;255;0;0#hgfhjnfghjhgffhg
-../../data/carDetector56x48_front_ov_100h.yml;0;50;255
+../../data/peopleDetector64x128.yml;255;0;0;$NotPed#hgfhjnfghjhgffhg
+../../data/carDetector56x48_v2.yml;0;50;255;$NotCar#
