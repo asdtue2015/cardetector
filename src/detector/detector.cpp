@@ -120,6 +120,7 @@ private:
 	vector<int> classifiers_red_vlaues;
 	vector<int> classifiers_green_vlaues;
 	vector<int> classifiers_blue_vlaues;
+	vector<string> classifiers_tag;
 };
 
 static void printHelp() {
@@ -170,7 +171,7 @@ void write_file(string filename, string &write_txt) {
 	return;
 }
 
-String detector_out(Rect* r) {
+String detector_out(Rect* r , string &classifiers_tag) {
 	int x1;
 	int x2;
 	int y1;
@@ -181,10 +182,10 @@ String detector_out(Rect* r) {
 	y1 = r->y;
 	x2 = (x1 + r->width);
 	y2 = (y1 + r->height);
-	txt_out_string = "NotCar -1 -1 -10 " + to_string(x1) + " " + to_string(y1)
+	txt_out_string =  classifiers_tag + " " + "-1 -1 -10 " + to_string(x1) + " " + to_string(y1)
 			+ " " + to_string(x2) + " " + to_string(y2)
 			+ " -1 -1 -1 -1000 -1000 -1000 -10\n";
-	//cout<<txt_out_string<<endl;
+	
 	return txt_out_string;
 }
 
@@ -367,16 +368,21 @@ void App::before_run() {
 	string blue; // The string containing the blue color value for the corresponding detector box (0->255)
 	String red; // The string containing the red color value for the corresponding detector box (0->255)
 	string green; // The string containing the green color value for the corresponding detector box (0->255)
+	string tag; // Tag that specifies the current classifier
+
 	while (getline(file_classifiers_in, classifier_line)) {
 		//loop to get all classifiers
 		classifier_line = classifier_line.substr(0, classifier_line.find("#")); // anything written after symbol # will be treated as a comment
-		colors = classifier_line.substr(classifier_line.find(";") + 1);
+		colors = classifier_line.substr(classifier_line.find(";") + 1 , classifier_line.find("$") );
 		red = colors.substr(0, colors.find(";"));
 		green_blue = colors.substr(colors.find(";") + 1);
 		green = green_blue.substr(0, green_blue.find(";"));
 		blue = green_blue.substr(green_blue.find(";") + 1);
+		tag = classifier_line.substr(classifier_line.find("$") + 1);
 		classifier_line = classifier_line.substr(0, classifier_line.find(";"));
 
+
+		classifiers_tag.push_back(tag);
 		classifiers_red_vlaues.push_back(stoi(red));
 		classifiers_green_vlaues.push_back(stoi(green));
 		classifiers_blue_vlaues.push_back(stoi(blue));
@@ -468,6 +474,7 @@ void App::run() {
 			if (frame.empty())
 				throw runtime_error(
 						string("can't open image file: " + args.src));
+			write_txt = "";
 		}
 		if (classifier_index < classifier_list.size()) { // as long as we have classifiers in the list
 
@@ -560,7 +567,7 @@ void App::run() {
 		Mat B(found.size(), 2, CV_32F); // contains the coordinates of Right-Bottom point of each detection - needed for the detection intersection
 		Mat labels(found.size(), 1, CV_32F);
 		Mat centers; // parameter fot kmeans that contains the centroids of the clusters
-		write_txt = "";
+		
 
 		for (size_t i = 0; i < found.size(); i++) {
 
@@ -576,8 +583,8 @@ void App::run() {
 
 			B.at<float>(i, 0) = samples.at<float>(i, 0) + r.width / 2; //bottom right point of cluster - x
 			B.at<float>(i, 1) = samples.at<float>(i, 1) - r.height / 2; //bottom right point of cluster - y
-
-			write_txt += detector_out(&r);
+            
+			write_txt += detector_out(&r , classifiers_tag.at(classifier_index - 1));
 			if (gr_threshold >= 0) //draw the detections without external clustering
 					{
 				rectangle(img_to_show_final, r.tl(), r.br(),
@@ -714,19 +721,20 @@ void App::run() {
 				}
 			}
 		}
-
+		
 		img_to_show_final.copyTo(img_out); // update img_out to be displayed with all the information per classifier written on it
 
-		if (args.file_gen) {
+
+		if (classifier_index >= classifier_list.size()) {
+					if (args.file_gen) {
 			write_file(args.src, write_txt);
 
-			if (!args.src_is_directory && !args.src_is_video
+			/*if (!args.src_is_directory && !args.src_is_video
 					&& !args.src_is_camera) // if processing a single file
 				running = false; // then don't loop on the current image
 
-			break; // don't display anything (much faster!)
+			break; // don't display anything (much faster!)*/
 		}
-		if (classifier_index >= classifier_list.size()) {
 			if (use_gpu) // here the text is added (fps) to the display both in case of cpu or gpu
 				putText(img_out, "Mode: GPU ", Point(5, 25),
 						FONT_HERSHEY_SIMPLEX, 1., Scalar(255, 100, 0), 2);
