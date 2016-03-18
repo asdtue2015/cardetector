@@ -598,7 +598,7 @@ void App::run() {
 									static_cast<int>(gpu_hog.getDescriptorSize()))
 							+ " FPS HOG detector " + to_string(classifier_index)
 							+ ":" + hogWorkFps(),
-					Point(5, 105 + classifier_index * 40), FONT_HERSHEY_SIMPLEX,
+					Point(5, 145 + classifier_index * 40), FONT_HERSHEY_SIMPLEX,
 					1.,
 					CV_RGB(classifiers_red_vlaues.at(classifier_index - 1),
 							classifiers_green_vlaues.at(classifier_index - 1),
@@ -613,7 +613,7 @@ void App::run() {
 									static_cast<int>(cpu_hog.getDescriptorSize()))
 							+ " FPS HOG detector " + to_string(classifier_index)
 							+ ":" + hogWorkFps(),
-					Point(5, 105 + classifier_index * 40), FONT_HERSHEY_SIMPLEX,
+					Point(5, 145 + classifier_index * 40), FONT_HERSHEY_SIMPLEX,
 					1.,
 					CV_RGB(classifiers_red_vlaues.at(classifier_index - 1),
 							classifiers_green_vlaues.at(classifier_index - 1),
@@ -733,8 +733,27 @@ void App::run() {
 			else
 				putText(img_out, "Mode: CPU", Point(5, 25),
 						FONT_HERSHEY_SIMPLEX, 1., Scalar(255, 100, 0), 2);
-			putText(img_out, "FPS (total): " + workFps(), Point(5, 65),
+
+			putText(img_out, "FPS (total): " + workFps(), Point(200, 25),
 					FONT_HERSHEY_SIMPLEX, 1., Scalar(255, 100, 0), 2);
+
+			putText(img_out,
+					"Scale: "
+							+ to_string(
+									scale) + " " 
+							+ "Levels number: " + to_string(nlevels) + " " 
+							+ "Convert image to gray: " + " " + to_string(make_gray),Point(5, 65), 
+						FONT_HERSHEY_SIMPLEX, 1., Scalar(255, 100, 0), 2);
+
+			putText(img_out,
+					 "Group threshold: " + to_string(gr_threshold) + " " + "Hit threshold: " + to_string(hit_threshold),
+					Point(5, 105),
+						FONT_HERSHEY_SIMPLEX, 1., Scalar(255, 100, 0), 2);
+					
+
+
+
+
 			//putText(img_out, "FPS (HOG only): " + hogWorkFps(), Point(5, 105), FONT_HERSHEY_SIMPLEX, 1., Scalar(255, 100, 0), 2);
 			if (!img_out.empty()) {
 				imshow("opencv_gpu_hog", img_out);
