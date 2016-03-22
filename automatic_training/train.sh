@@ -25,7 +25,7 @@ MATLAB=~/MATLAB/R2015b/bin/matlab
 
 # compile the detector
 (cd "$LOCAL_DIR/src/detector"; rm CMakeCache.txt; rm -r CMakeFiles; rm -f detector; cmake .; make)
-(ln ../data/Detector_${DETECTOR}.yml ../data/Detector_${DETECTOR}.yml)	# XXX vm: this should not be needed anymore at some point
+#(ln ../data/Detector_${DETECTOR}.yml ../data/Detector_${DETECTOR}.yml)	# XXX vm: this should not be needed anymore at some point
 
 for i in `seq 0 $STEPS`;
 do	# every step
