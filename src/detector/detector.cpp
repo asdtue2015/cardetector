@@ -333,7 +333,7 @@ void App::run()
 
     // Shah modification replaces below to load detecor in yml file
     // replace commented code below
-    FileStorage fs("../../data/carDetector56x48.yml", FileStorage::READ);
+    FileStorage fs("../../data/Detector_car_all.yml", FileStorage::READ);
 
 
     int width, height;
