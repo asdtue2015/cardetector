@@ -30,6 +30,7 @@ public:
 	bool src_is_video;
 	bool file_gen;
 	bool headless;
+	bool save_frame;
 	bool src_is_camera;
 	bool src_is_directory;
 
@@ -144,7 +145,8 @@ static void printHelp() {
 			<< "  [--dst_video <path>] # output video path\n"
 			<< "  [--dst_video_fps <double>] # output video fps\n"
 			<< "  [--write_file] # write file in directory fps\n"
-			<< "  [--headless # do not display image fps\n";
+			<< "  [--headless # do not display image fps\n"
+			<< "  [--save_frame] # when processing a directory of images, save every frame as a file\n";
 	help_showed = true;
 }
 
@@ -187,7 +189,7 @@ String detector_out(Rect* r , string &classifiers_tag) {
 	txt_out_string =  classifiers_tag + " " + "-1 -1 -10 " + to_string(x1) + " " + to_string(y1)
 			+ " " + to_string(x2) + " " + to_string(y2)
 			+ " -1 -1 -1 -1000 -1000 -1000 -10\n";
-	
+
 	return txt_out_string;
 }
 
@@ -282,6 +284,8 @@ Args Args::read(int argc, char** argv) {
 			args.file_gen = true; //txtGenerator(argc, argv) ;
         else if (string(argv[i]) == "--headless")
 			args.headless = true; //disabling image display ;
+		else if (string(argv[i]) == "--save_frame")
+			args.save_frame = true; //disabling image display ;
 		else if (string(argv[i]) == "--video") {
 			args.src = argv[++i];
 			args.src_is_video = true;
@@ -467,7 +471,7 @@ void App::run() {
 					}
 				}
 
-				frame = imread(args.src); // update frame to the input image 
+				frame = imread(args.src); // update frame to the input image
 				if (frame.empty())
 					throw runtime_error(
 							string("can't open image file: " + args.src));
@@ -571,7 +575,7 @@ void App::run() {
 		Mat B(found.size(), 2, CV_32F); // contains the coordinates of Right-Bottom point of each detection - needed for the detection intersection
 		Mat labels(found.size(), 1, CV_32F);
 		Mat centers; // parameter fot kmeans that contains the centroids of the clusters
-		
+
 
 		for (size_t i = 0; i < found.size(); i++) {
 
@@ -582,12 +586,12 @@ void App::run() {
 
 			area.at<float>(0, i) = r.height * r.width; // calculate the area of each detection
 
-			A.at<float>(i, 0) = samples.at<float>(i, 0) - r.width / 2; //top left point of cluster - x 
+			A.at<float>(i, 0) = samples.at<float>(i, 0) - r.width / 2; //top left point of cluster - x
 			A.at<float>(i, 1) = samples.at<float>(i, 1) + r.height / 2; //top left point of cluster - y
 
 			B.at<float>(i, 0) = samples.at<float>(i, 0) + r.width / 2; //bottom right point of cluster - x
 			B.at<float>(i, 1) = samples.at<float>(i, 1) - r.height / 2; //bottom right point of cluster - y
-            
+
 			write_txt += detector_out(&r , classifiers_tag.at(classifier_index - 1));
 			if (gr_threshold >= 0 && args.headless == false) //draw the detections without external clustering
 					{
@@ -703,11 +707,11 @@ void App::run() {
 
 				mnarea.at<float>(0, k) = mean_area;
 
-				h = sqrt( // calculate the height of each calculated cluster         
+				h = sqrt( // calculate the height of each calculated cluster
 						(mnarea.at<float>(0, k))
 								* ((float) height_run / (float) width_run));
 				w = (mnarea.at<float>(0, k)) / h; // calculate the width of each calculated cluster
-				if (gr_threshold < 0 && args.headless == false) // special gr_threshold = -1 for clustering 
+				if (gr_threshold < 0 && args.headless == false) // special gr_threshold = -1 for clustering
 						{
 					rectangle(
 							img_to_show_final,              // draw the clusters
@@ -725,7 +729,7 @@ void App::run() {
 				}
 			}
 		}
-		
+
 		img_to_show_final.copyTo(img_out); // update img_out to be displayed with all the information per classifier written on it
 
 
@@ -739,7 +743,7 @@ void App::run() {
 
 			   if (args.headless == true && args.file_gen == true ) break; // don't display anything (much faster!)*/
 
-			
+
 		}
 			if (use_gpu) // here the text is added (fps) to the display both in case of cpu or gpu
 				putText(img_out, "Mode: GPU ", Point(5, 25),
@@ -754,16 +758,16 @@ void App::run() {
 			putText(img_out,
 					"Scale: "
 							+ to_string(
-									scale) + " " 
-							+ "Levels number: " + to_string(nlevels) + " " 
-							+ "Convert image to gray: " + " " + to_string(make_gray),Point(5, 65), 
+									scale) + " "
+							+ "Levels number: " + to_string(nlevels) + " "
+							+ "Convert image to gray: " + " " + to_string(make_gray),Point(5, 65),
 						FONT_HERSHEY_SIMPLEX, 1., Scalar(255, 100, 0), 2);
 
 			putText(img_out,
 					 "Group threshold: " + to_string(gr_threshold) + " " + "Hit threshold: " + to_string(hit_threshold),
 					Point(5, 105),
 						FONT_HERSHEY_SIMPLEX, 1., Scalar(255, 100, 0), 2);
-					
+
 
 
 
@@ -771,6 +775,11 @@ void App::run() {
 			//putText(img_out, "FPS (HOG only): " + hogWorkFps(), Point(5, 105), FONT_HERSHEY_SIMPLEX, 1., Scalar(255, 100, 0), 2);
 			if (!img_out.empty() && args.headless == false) {
 				imshow("opencv_gpu_hog", img_out);
+			}
+
+			if (!img_out.empty() && args.save_frame == true && args.src_is_directory == true) { //FIXME: issues segfault at the end of the directory
+				imwrite("out_" + string(ep->d_name), img_out);
+				cout << "Saving: " << "out_" + string(ep->d_name) << "\n";
 			}
 
 			if (args.src_is_video || args.src_is_camera)
@@ -802,7 +811,7 @@ void App::run() {
 		// produce an output video from the results
 		handleKey((char) waitKey(3));
 
-		       
+
 
 		//if (args.src_is_directory) break; // if processing a folder, get the next image instead of looping
 
