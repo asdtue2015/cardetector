@@ -148,7 +148,7 @@ static void printHelp() {
 	help_showed = true;
 }
 
-//Creating .txt with respect to image's name
+//Creating .txt with respect to image's name for the negative data mining
 
 void write_file(string filename, string &write_txt) {
 // get the name of the input image
@@ -172,7 +172,7 @@ void write_file(string filename, string &write_txt) {
 
 	return;
 }
-
+// detector_out is responsible for producing the string to be written in the txt file used for the negative data mining
 String detector_out(Rect* r , string &classifiers_tag) {
 	int x1;
 	int x2;
@@ -423,6 +423,7 @@ void App::before_run() {
 	}
 }
 void App::run() {
+	/*This is the actual run function that stays in the loop as long as the component is running*/
 	// Iterate over all frames..
 
 	while (running) //&& !frame.empty())// as long as running is set to be true and we still have frames to run then
