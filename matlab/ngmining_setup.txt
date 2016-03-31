@@ -1,0 +1,3 @@
+root_dir: F:\Cardetect
+detector: car_all
+mining_method: area
