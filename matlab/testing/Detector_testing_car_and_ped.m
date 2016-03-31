@@ -158,7 +158,7 @@ testingresult=zeros(total,9);
                             type = ngobjects(a).type;
 
                             % get left, top, right, bottom pixel coordinates for all cars in image
-                            if strcmp( type, './Detector_car_all.yml.backup8;255;0;0;NotCar' )
+                            if strcmp( type, 'NotCar' )
                                 %% save the NotCar roi
                                 ngcar_pt.(['c',num2str(ngt)]) = [ngobjects(a).x1,ngobjects(a).y1,ngobjects(a).x2-ngobjects(a).x1+1,ngobjects(a).y2-ngobjects(a).y1+1]; % get x1, y1, width, height
                                 ngt = ngt + 1;
@@ -171,7 +171,7 @@ testingresult=zeros(total,9);
                             type = ngobjects(a).type;
 
                             % get left, top, right, bottom pixel coordinates for all cars in image
-                            if strcmp( type, './Detector_car_all.yml.backup8;255;0;0;NotCar' )
+                            if strcmp( type, 'NotCar' )
                                 %% save the NotCar roi
                                 ngcar_pt.(['c',num2str(ngt)]) = [ngobjects(a).x1,ngobjects(a).y1,ngobjects(a).x2-ngobjects(a).x1+1,ngobjects(a).y2-ngobjects(a).y1+1]; % get x1, y1, width, height
                                 ngt = ngt + 1;
