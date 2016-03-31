@@ -1,0 +1,3 @@
+root_dir: C:\Users\zli1\Desktop\Car_detect\
+detector: car_all_8
+testing_method: area

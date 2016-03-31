@@ -53,7 +53,7 @@ do	# every step
 	# perform hard negative mining
 	# concat to existing negative HOG features
 	# train the classifier
-	(cd $LOCAL_DIR/matlab/automatic; $MATLAB -nodesktop -nosplash -nojvm -r "run('ngmining_training_v2.m'); quit")
+	(cd $LOCAL_DIR/matlab/automatic; $MATLAB -nodesktop -nosplash -nojvm -r "run('ngmining_training.m'); quit")
 		# FIXME change call to have a quit, like: matlab -nodesktop -nodisplay -r "cd folder2/; run('mycode.m'); quit"  < /dev/null  > output.txt
 
 	# clean images and labels
